@@ -1,0 +1,6830 @@
+#LyX 2.0 created this file. For more info see http://www.lyx.org/
+\lyxformat 413
+\begin_document
+\begin_header
+\textclass report
+\begin_preamble
+%%% PACKAGES
+\usepackage{color}      % Use colours for code listings
+\usepackage{etoolbox}
+\apptocmd{\sloppy}{\hbadness 10000\relax}{}{}	% Suppress underfull bad box(es) for some bibliography entries
+\usepackage{float}      % Allow "H" parameter for figures
+\usepackage{graphicx}   % Required to use pictures
+\usepackage{listings}   % Allow listing of source codes
+\usepackage{setspace}   % Control line spacing
+\onehalfspacing
+\usepackage{url}        % \url command for bibliography entries
+\usepackage{cite}    %adds a space before citations
+\usepackage{textcomp} %used for a better/lower ~ symbol
+\widowpenalty=10000
+\clubpenalty=10000
+\end_preamble
+\options 11pt,letterpaper
+\use_default_options true
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_amsmath 1
+\use_esint 1
+\use_mhchem 1
+\use_mathdots 1
+\cite_engine basic
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\use_refstyle 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 2
+\tocdepth 2
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\listings_params "basicstyle={\ttfamily\scriptsize},breaklines=true,captionpos=t"
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+CPCG: A Cross-Paradigm Code Generator
+\end_layout
+
+\begin_layout Author
+Bianca Curutan
+\begin_inset Newline newline
+\end_inset
+
+Department of Computing and Software
+\begin_inset Newline newline
+\end_inset
+
+McMaster University
+\end_layout
+
+\begin_layout Abstract
+The goal of this project is to demonstrate the existence of a language of
+ design that bridges the gap between abstract algorithms and explicit code.
+ The design decisions made between the specifications of abstract algorithms
+ and their concrete implementations may be encoded in a code generator using
+ this tangible language of design.
+ The Cross-Paradigm Code Generator (CPCG) is designed as a tool to generate
+ code, allowing programmers to solve problems at the level of abstraction
+ of the problem domain.
+ Two domain specific languages were developed to incorporate the core ideas
+ of this project; that is, the concepts and semantic characteristics of
+ all the paradigms and the choices behind the design of algorithms.
+ The generated code demonstrates the existence of abstract algorithms and
+ a tangible language of design.
+\end_layout
+
+\begin_layout Chapter*
+Acknowledgments
+\end_layout
+
+\begin_layout Standard
+I would like to thank my supervisor, Dr.
+ Jacques Carette, without whom this research project would not have been
+ possible.
+ I greatly valued his guidance and expertise throughout the course of my
+ studies at McMaster University.
+\end_layout
+
+\begin_layout Standard
+Special thanks to the members of my examination committee, Dr.
+ Jacques Carette and Dr.
+ Wolfram Kahl, for taking time out of their busy schedules to review and
+ improve the quality of this work.
+\end_layout
+
+\begin_layout Standard
+I would also like to thank my family, friends, and fellow students for their
+ continuous encouragement, advice, and support.
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset toc
+LatexCommand tableofcontents
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset FloatList figure
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Chapter*
+Executive Summary
+\end_layout
+
+\begin_layout Standard
+The goal of this project is to demonstrate the existence of a language of
+ design that bridges the gap between abstract algorithms and explicit code.
+ When used to describe distinct concepts or thought patterns for algorithms,
+ the four programming paradigms --- functional, logic, object-oriented (OO),
+ and imperative --- appear unrelated initially.
+ They are, however, able to express certain common concepts, albeit in different
+ ways.
+ The design decisions made between the specifications of abstract algorithms
+ and their concrete implementations may be encoded in a code generator using
+ this tangible language of design.
+\end_layout
+
+\begin_layout Standard
+The Cross-Paradigm Code Generator (CPCG) is designed as a tool to generate
+ code, allowing programmers to solve problems at the level of abstraction
+ of the problem domain.
+ Two domain specific languages (DSLs) were developed to incorporate the
+ core ideas of this project; that is, the concepts and semantic characteristics
+ of all the paradigms (referred to as the internal language in this report)
+ and the choices behind the design of algorithms (referred to as the design
+ language).
+ The CPCG uses the internal DSL along with supplemental Haskell modules
+ and data structures representing a series of languages (Java, Lua, Haskell,
+ 
+\begin_inset Formula $\lambda$
+\end_inset
+
+Prolog, C#, Lisp, Lua, Prolog, and Scala) to implement ASTs.
+ 
+\end_layout
+
+\begin_layout Standard
+To generate code, the secondary design language is used in conjunction with
+ the DSL to accommodate external choices as provided by the user.
+ The CPCG converts programs written in the internal language into intermediate
+ representations of the implementation languages based on the design decisions,
+ and then applies the final syntactical details before outputting source
+ code.
+ The generated code demonstrates the existence of abstract algorithms and
+ a tangible language of design.
+ 
+\end_layout
+
+\begin_layout Standard
+This report describes characteristic concepts of programming paradigms as
+ well as the technical nature of DSLs.
+ Subsequent sections provide an in-depth examination of the CPCG project,
+ including its modules (categorized by type), DSL design, development and
+ implementation details, and testing information.
+\end_layout
+
+\begin_layout Chapter
+\begin_inset CommandInset label
+LatexCommand label
+name "chap:Introduction"
+
+\end_inset
+
+Introduction
+\end_layout
+
+\begin_layout Standard
+Despite having the capability to essentially model the same programs, some
+ languages, such as C/C++ and Java, are typically favoured by industry while
+ others, such as Mozart-Oz and Haskell, are more often found in academic
+ environments.
+ As such, developers are typically more familiar with some types of programming
+ languages than others.
+ This trend is mainly due to the separate natures or paradigms of the programmin
+g languages.
+\end_layout
+
+\begin_layout Standard
+Stating that the functional, logic, object-oriented (OO), and imperative
+ paradigms are totally distinct fundamental styles of computer programming
+ is a reasonable notion.
+ They vary not only in obvious stylistic and syntactical ways, but also
+ in the abstractions used to represent the elements of programs and the
+ steps used to compose computations.
+ Moreover, they are foundationally based on different models of computation:
+ the 
+\begin_inset Formula $\lambda$
+\end_inset
+
+-calculus for functional programming, first-order logic for logic programming,
+ and the Turing machine for OO and imperative programming.
+ (Chapter 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "chap:Paradigms"
+
+\end_inset
+
+ contains more information about the four programming paradigms.) However,
+ deeper analysis observes that the paradigms share some fundamental concepts
+ and patterns that, when abstracted, form the foundation of any cross-paradigm
+ implementation language.
+\end_layout
+
+\begin_layout Standard
+The aim of the CPCG is to demonstrate that although the four programming
+ paradigms seem unrelated, the design decisions made between the specifications
+ of abstract algorithms and their concrete implementations may be tangibly
+ encoded in a code generator.
+ It is out of scope of this academic project to abstract all possible shared
+ concepts within these paradigms; only concepts required to implement some
+ simple, standard programs are examined.
+ A more detailed description of this goal and its limitations are found
+ in Chapter 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "chap:Goals"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+To achieve this goal, one DSL was developed to represent the abstract core
+ ideas shared among the paradigms, independent of language implementation,
+ and another to provide and limit design choices for the algorithms.
+ This report describes the technical nature of DSLs in Chapter 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "chap:DSLs"
+
+\end_inset
+
+; information about these specific DSLs may be found in Chapters 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "chap:CPCG"
+
+\end_inset
+
+ and 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "chap:Design-Language"
+
+\end_inset
+
+.
+ Projects developed by other students and programmers, such as Story of
+ an Acyclic Graph Assemble (SAGA) program 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "beyak-carette:2011"
+
+\end_inset
+
+ and a Generic Object-Oriented Language (GOOL) 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "costabile-carette:2012"
+
+\end_inset
+
+, were used as guides for developing the initial AST types and design DSL
+ before the modules were adapted to better accommodate the CPCG's goals.
+\end_layout
+
+\begin_layout Standard
+Chapter 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "chap:Requirements"
+
+\end_inset
+
+ of this report explains the project requirements --- what users should
+ expect with regards to use and functionality of the code generator.
+ Information about the methodology on the design of the project is included
+ in Chapter 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "chap:Methodology"
+
+\end_inset
+
+.
+ Chapters 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "chap:Implementation"
+
+\end_inset
+
+ and 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "chap:Testing"
+
+\end_inset
+
+ describe the development, implementation, and testing phases and contain
+ code samples.
+ 
+\end_layout
+
+\begin_layout Chapter
+\begin_inset CommandInset label
+LatexCommand label
+name "chap:Goals"
+
+\end_inset
+
+Project Goals and Process
+\end_layout
+
+\begin_layout Standard
+The goal of this project is to demonstrate that, although the four programming
+ paradigms --- functional, logic, OO, and imperative --- for algorithms
+ appear unrelated initially, the design decisions made between the specification
+s of the abstract algorithms and their concrete implementation may be encoded
+ in a code generator.
+ In particular, that there exists a fundamental set of concepts and design
+ decisions used to represent the elements of programs and the steps used
+ to compose computations at a base level, and that a design language based
+ on these external choices is a concrete artifact, not just theoretical.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Quotes eld
+\end_inset
+
+Ideal
+\begin_inset Quotes erd
+\end_inset
+
+ solutions for simple, standard programs were developed or collected, then
+ similarities were theorized based on observation and analysis with conceptual
+ input from a variety of programming languages textbooks 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "clark:2000,friedman-wand-haynes:2001,mitchell:1996,mitchell:2002,sebasta:2001"
+
+\end_inset
+
+.
+ This method is, of course, likely liable to human error and prone to bias
+ based on the researcher's knowledge base and experience.
+\end_layout
+
+\begin_layout Standard
+Ultimately, the following were developed: 
+\end_layout
+
+\begin_layout Itemize
+A DSL to internally demonstrate some needed concepts.
+ Semantic pseudocode was initially used to capture high-level ideas before
+ writing the abstractions and data structures in the host language, Haskell.
+ 
+\end_layout
+
+\begin_layout Itemize
+A design language (Chapter 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "chap:Design-Language"
+
+\end_inset
+
+) to provide --- yet limit, per the scope of the project --- the design
+ choices for users to input to the software.
+\end_layout
+
+\begin_layout Itemize
+Language ASTs to supplement the DSL with additional abstractions that are
+ evident in one or more paradigms but not in the others.
+ Eventually, these language ASTs were identified more accurately as paradigm
+ ASTs since programming languages from within the same paradigm translate
+ similarly.
+ 
+\end_layout
+
+\begin_layout Itemize
+Renderers to map DSL code to intermediate representations of code in the
+ respective paradigm, forming 
+\begin_inset Quotes eld
+\end_inset
+
+almost
+\begin_inset Quotes erd
+\end_inset
+
+ source code --- again, there is one per paradigm.
+ 
+\end_layout
+
+\begin_layout Itemize
+Pretty printers to apply the proper syntax to the intermediate representations
+ of code and generate the final compilable and implementable source code.
+ Since syntax naturally differs among languages, regardless of the paradigm(s)
+ they are in, there is one printer per language.
+\end_layout
+
+\begin_layout Standard
+As previously mentioned, only enough abstract characteristics are identified
+ to produce a sample of programs using the CPCG.
+ It is out of scope of this academic project to identify all common features
+ between the programming paradigms.
+\end_layout
+
+\begin_layout Chapter
+\begin_inset CommandInset label
+LatexCommand label
+name "chap:Paradigms"
+
+\end_inset
+
+Programming Paradigms
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+Programming paradigms are fundamental styles of computer programming.
+ 
+\end_layout
+
+\end_inset
+
+The internal language represents some of the main concepts shared between
+ implementation languages within each of the programming paradigms.
+ But what do these so-called 
+\begin_inset Quotes eld
+\end_inset
+
+main concepts
+\begin_inset Quotes erd
+\end_inset
+
+ refer to? This section of the report provides perspective on both the similarit
+ies and differences between the paradigms as well as explores ideal quicksort
+ solutions coded in each of the primary project languages.
+\end_layout
+
+\begin_layout Section
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:oo"
+
+\end_inset
+
+Concepts of OO Languages
+\end_layout
+
+\begin_layout Standard
+There is much mainstream support for OO programming 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "sebasta:2001"
+
+\end_inset
+
+, even within non-OO languages as explored in Section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:Similarity-Analysis"
+
+\end_inset
+
+.
+ In OO design, programs are thought of as a collection of interacting objects
+ that invoke methods or pass messages 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "pierce:2002"
+
+\end_inset
+
+.
+ These objects are each viewed as independent entities with their own state
+ which is accessed and modified by methods in the program.
+ The OO paradigm promotes the reusability, sharing, and extensibility of
+ code, popular characteristics in industry.
+ Objects are encapsulated into classes to logically group variables, types,
+ methods, and events and/or inherit them from the classes' associated superclass
+es, enabling the creation of new types 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "web:classes"
+
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+Classes are constructs which are used to create instances, known as objects,
+ of themselves based on blueprint code; classes represent concepts whereas
+ objects represent phenomena.
+ Classes consist of instance variables, which are local to the class itself,
+ and methods to associate state and behaviour with the objects of that class
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "costabile-carette:2012"
+
+\end_inset
+
+.
+ Generally, classes are instantiated as objects before their data are accessible
+ or modifiable, each instance maintaining its own set of data separate from
+ other instances; classes represent concepts whereas objects represent phenomena.
+ 
+\end_layout
+
+\begin_layout Standard
+As previously mentioned, methods are one component of classes.
+ Based on their signatures, methods accept certain types of arguments as
+ input; these types may include base types, such as int or boolean, or compound
+ types, such as lists or arrays.
+ The data are then processed or modified and certain types of results are
+ returned if return statements are defined, or only control flow is returned
+ if the return type is void.
+ The signature also includes information about the scope of methods.
+ If the method is private, it is a helper used in other methods within the
+ class and, thus, is only accessible within the class.
+ If the method is public, the method is accessible outside of the class
+ or object.
+ In C++, there are also protected methods which are accessible from members
+ of the same class or derived classes 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "web:classes"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Classes generally contain one or more special methods without return types
+ (void or otherwise) called constructors --- they are the methods used to
+ initialize new objects.
+ Execution of the constructor performs memory allocation for the object
+ and initializes any instance variables 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "costabile-carette:2012"
+
+\end_inset
+
+.
+ More than one constructor may exist in classes due to overloading.
+ It is also possible to restrict instantiation to only one object, known
+ as the singleton design pattern.
+ 
+\end_layout
+
+\begin_layout Standard
+Some of the main features of languages within the OO paradigm are 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "web:normark:paradigms"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+Inheritance: Classes inherit and sometimes override characteristics from
+ base classes, such as structural and behavioural features, creating a hierarchy
+ of classes.
+ However, the derived classes are also developed to include new methods
+ and instance variables that modify state and store additional data respectively
+, extending the scope of the base classes.
+ 
+\end_layout
+
+\begin_layout Itemize
+Subtyping or subtype polymorphism: Subtypes are data types that are related
+ to other data types by some notion of substitutability.
+ Using an example, if S is a subtype of T
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+(often written as S <: T)
+\end_layout
+
+\end_inset
+
+, then any term of type S is safely used in a context where a term of type
+ T is expected.
+ Generally, subtyping should be reflexive 
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+(S <: S) 
+\end_layout
+
+\end_inset
+
+and transitive 
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+(S <: U, U <: T 
+\backslash
+rightarrow S <: T)
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "pierce:2002"
+
+\end_inset
+
+.
+ 
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+Encapsulation and information hiding: In OO programming, the class interface
+ (
+\begin_inset Quotes eld
+\end_inset
+
+how
+\begin_inset Quotes erd
+\end_inset
+
+ objects of the class are accessed) is separate from the class implementation
+ and the actual method code.
+ From an inheritance perspective, inherited methods and variables are used
+ without access to the source code of the base classes.
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+Data abstraction: The system hides certain details of how data is stored,
+ created, and maintained.
+ Data abstraction enforces separation between the abstract properties of
+ data types and the concrete details of their implementations, a key factor
+ in the CPCG project.
+ The abstract properties of the data type are publicly accessed and modified,
+ but the concrete implementation is private.
+\end_layout
+
+\begin_layout Itemize
+Dynamic dispatch: Sending the same message to different objects may yield
+ different results or responses.
+ The methods executed within objects depend on how the objects were implemented
+ or changed; objects do not maintain only static attributes 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "mitchell:2002,friedman-wand-haynes:2001"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Some examples of object-oriented languages are Ruby, Groovy, and C++; the
+ object-oriented languages generated in the CPCG are Java, C#, and Scala.
+\end_layout
+
+\begin_layout Subsection
+Quicksort in Java
+\end_layout
+
+\begin_layout Standard
+The ideal quicksort solution in Java is shown in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "example:quicksort-Java"
+
+\end_inset
+
+ and the generated solution is in Appendix 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "chap:AppendixB"
+
+\end_inset
+
+, Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:qsJava"
+
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout LyX-Code
+public class Quicksort {
+\end_layout
+
+\begin_layout LyX-Code
+
+\end_layout
+
+\begin_layout LyX-Code
+  public void quicksort(int[] items) {
+\end_layout
+
+\begin_layout LyX-Code
+    if (items.length > 1) {
+\end_layout
+
+\begin_layout LyX-Code
+        quicksortRec(items, 0, items.length-1);
+\end_layout
+
+\begin_layout LyX-Code
+    }
+\end_layout
+
+\begin_layout LyX-Code
+  }
+\end_layout
+
+\begin_layout LyX-Code
+   
+\end_layout
+
+\begin_layout LyX-Code
+  private void quicksortRec(int[] items, int leftIndex, 
+\end_layout
+
+\begin_layout LyX-Code
+  int rightIndex) {
+\end_layout
+
+\begin_layout LyX-Code
+    if (leftIndex < rightIndex) {
+\end_layout
+
+\begin_layout LyX-Code
+      int pivotIndex = partition(items, leftIndex, rightIndex);
+\end_layout
+
+\begin_layout LyX-Code
+      quicksortRec(items, leftIndex, pivotIndex-1);
+\end_layout
+
+\begin_layout LyX-Code
+      quicksortRec(items, pivotIndex+1, rightIndex);
+\end_layout
+
+\begin_layout LyX-Code
+    }
+\end_layout
+
+\begin_layout LyX-Code
+  }
+\end_layout
+
+\begin_layout LyX-Code
+   	 
+\end_layout
+
+\begin_layout LyX-Code
+  private int partition(int[] items, int leftIndex, 
+\end_layout
+
+\begin_layout LyX-Code
+  int rightIndex) {
+\end_layout
+
+\begin_layout LyX-Code
+    int pivotValue = items[rightIndex];
+\end_layout
+
+\begin_layout LyX-Code
+    int i = leftIndex-1;
+\end_layout
+
+\begin_layout LyX-Code
+    int j = leftIndex;   
+\end_layout
+
+\begin_layout LyX-Code
+    while (j < rightIndex) {
+\end_layout
+
+\begin_layout LyX-Code
+      if(items[j] < pivotValue) {
+\end_layout
+
+\begin_layout LyX-Code
+        i++;
+\end_layout
+
+\begin_layout LyX-Code
+        swap(items, i, j);
+\end_layout
+
+\begin_layout LyX-Code
+      }
+\end_layout
+
+\begin_layout LyX-Code
+      j++;
+\end_layout
+
+\begin_layout LyX-Code
+    }
+\end_layout
+
+\begin_layout LyX-Code
+    swap(items, i+1, rightIndex);
+\end_layout
+
+\begin_layout LyX-Code
+    return i+1;
+\end_layout
+
+\begin_layout LyX-Code
+  }
+\end_layout
+
+\begin_layout LyX-Code
+   	
+\end_layout
+
+\begin_layout LyX-Code
+  private void swap(int[] items, int i, int j) {
+\end_layout
+
+\begin_layout LyX-Code
+    int k = items[i];
+\end_layout
+
+\begin_layout LyX-Code
+    items[i] = items[j];
+\end_layout
+
+\begin_layout LyX-Code
+    items[j] = k;
+\end_layout
+
+\begin_layout LyX-Code
+  } 
+\end_layout
+
+\begin_layout LyX-Code
+} 
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Ideal Quicksort Solution in Java
+\begin_inset CommandInset label
+LatexCommand label
+name "example:quicksort-Java"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In this example, Java has a distinct advantage --- the mutable array is
+ sorted in place without using any extra memory, making it relatively fast
+ and more efficient than implementations which use immutable structures.
+\end_layout
+
+\begin_layout Section
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:imperative"
+
+\end_inset
+
+Concepts of Imperative Languages
+\end_layout
+
+\begin_layout Standard
+Imperative programming is a paradigm that emphasizes changes in program
+ state via describing computation in terms of statements as functions of
+ time 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "web:normark:paradigms"
+
+\end_inset
+
+.
+ The basic idea of imperative programming is guided sequences of abstractions
+ of one or more actions to commands, each of which may have observable effects
+ (or side effects) on the program state.
+ The imperative paradigm most closely resembles machine language since it
+ grew naturally from assembly language, generally making it more popular
+ among and familiar to programmers.
+ 
+\end_layout
+
+\begin_layout Standard
+Imperative programs essentially consist of sequences of assignments to variables
+, describing a set of possible sequences.
+ For execution, the statements are performed in a stepwise, sequential manner
+ as described by the program.
+ The flow of execution is modified by conditional and looping statements,
+ abstracting the branch instructions found in the underlying machine instruction
+ set.
+ 
+\end_layout
+
+\begin_layout Standard
+The main features of imperative languages are procedures and functions,
+ expressions and variable assignments (i.e., assign or reassign the value
+ stored in the storage location which sometimes occurs frequently within
+ programs), data and control structures, I/O commands, and error and exception
+ handling mechanisms.
+ Again, the importance of the order of procedures is emphasized as different
+ orders of operations (or different inputs) may or may not yield different
+ outputs.
+\end_layout
+
+\begin_layout Standard
+Examples of imperative languages are Pascal, Go, and Ada.
+ The imperative languages used in the CPCG are Lua, the ideal quicksort
+ solution of which is very conceptually similar to Java's OO solution in
+ Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "example:quicksort-Java"
+
+\end_inset
+
+, and C.
+\end_layout
+
+\begin_layout Subsection
+Quicksort in Lua
+\end_layout
+
+\begin_layout Standard
+The ideal quicksort solution in Lua is shown in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "example:quicksort-C"
+
+\end_inset
+
+ and the generated solution is in Appendix 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "chap:AppendixB"
+
+\end_inset
+
+, Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:qsLua"
+
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout LyX-Code
+function quicksort(items)
+\end_layout
+
+\begin_layout LyX-Code
+  if (#items > 1) then
+\end_layout
+
+\begin_layout LyX-Code
+    return qsRec(items,1,#items)
+\end_layout
+
+\begin_layout LyX-Code
+  end
+\end_layout
+
+\begin_layout LyX-Code
+end
+\end_layout
+
+\begin_layout LyX-Code
+   	
+\end_layout
+
+\begin_layout LyX-Code
+function qsRec(items,leftIndex,rightIndex)
+\end_layout
+
+\begin_layout LyX-Code
+  if (leftIndex < rightIndex) then       
+\end_layout
+
+\begin_layout LyX-Code
+    local pivotIndex = partition(items,leftIndex,rightIndex)         
+\end_layout
+
+\begin_layout LyX-Code
+    qsRec(items,leftIndex,pivotIndex-1)         
+\end_layout
+
+\begin_layout LyX-Code
+    qsRec(items,pivotIndex+1,rightIndex)         
+\end_layout
+
+\begin_layout LyX-Code
+    return items
+\end_layout
+
+\begin_layout LyX-Code
+  end 
+\end_layout
+
+\begin_layout LyX-Code
+end
+\end_layout
+
+\begin_layout LyX-Code
+   	
+\end_layout
+
+\begin_layout LyX-Code
+function partition(items,leftIndex,rightIndex)     
+\end_layout
+
+\begin_layout LyX-Code
+  local pivotValue = items[rightIndex]     
+\end_layout
+
+\begin_layout LyX-Code
+  local i = leftIndex-1     
+\end_layout
+
+\begin_layout LyX-Code
+  local j = leftIndex     
+\end_layout
+
+\begin_layout LyX-Code
+  while (j < rightIndex) do     
+\end_layout
+
+\begin_layout LyX-Code
+    if (items[j] < pivotValue) then     
+\end_layout
+
+\begin_layout LyX-Code
+      i = i+1         
+\end_layout
+
+\begin_layout LyX-Code
+      swap(items,i,j)       
+\end_layout
+
+\begin_layout LyX-Code
+    end       
+\end_layout
+
+\begin_layout LyX-Code
+    j = j+1
+\end_layout
+
+\begin_layout LyX-Code
+  end
+\end_layout
+
+\begin_layout LyX-Code
+  swap(items,i+1,rightIndex)     
+\end_layout
+
+\begin_layout LyX-Code
+  return i+1 
+\end_layout
+
+\begin_layout LyX-Code
+end
+\end_layout
+
+\begin_layout LyX-Code
+   	
+\end_layout
+
+\begin_layout LyX-Code
+function swap(items,i,j)     
+\end_layout
+
+\begin_layout LyX-Code
+  local k = items[i]     
+\end_layout
+
+\begin_layout LyX-Code
+  items[i] = items[j] 
+\end_layout
+
+\begin_layout LyX-Code
+  items[j] = k 
+\end_layout
+
+\begin_layout LyX-Code
+end
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Ideal Quicksort in Lua
+\begin_inset CommandInset label
+LatexCommand label
+name "example:quicksort-C"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:functional"
+
+\end_inset
+
+Concepts of Functional Languages
+\end_layout
+
+\begin_layout Standard
+Functional programming relates to the theory of functions rather than to
+ the theory of sets, concentrating on the high-level of 
+\begin_inset Quotes eld
+\end_inset
+
+what
+\begin_inset Quotes erd
+\end_inset
+
+ is being computed instead of the low-level 
+\begin_inset Quotes eld
+\end_inset
+
+how
+\begin_inset Quotes erd
+\end_inset
+
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "hudak:1989"
+
+\end_inset
+
+.
+ It has its roots in the 
+\begin_inset Formula $\lambda$
+\end_inset
+
+-calculus, a formal system in mathematical logic for expressing computations
+ via variable binding and substitution.
+ All computations are done by applying or calling functions and the natural
+ abstraction, abstracting a single expression to a function which are then
+ evaluated as an expression, is the function.
+ Program execution involves functions as first-class objects 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "web:zeh:languages"
+
+\end_inset
+
+ calling each other and returning results; state and mutable data are generally
+ avoided.
+ 
+\end_layout
+
+\begin_layout Standard
+In the functional paradigm, all functions are first-class values without
+ state changes and complex functions are built by composing simpler functions.
+ Functions are treated like other values and passed as arguments to other
+ functions or returned as results of functions, known as higher-order programmin
+g.
+ Furthermore, it is possible to define and manipulate functions from within
+ other functions 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "web:haskell"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Functional programming languages follow a declarative approach since they
+ describe actions.
+ Developers declare what programs do by defining functions that map inputs
+ to outputs, taking in arguments and returning a single solution to move
+ forward.
+ Computation is treated as the evaluation of mathematical functions.
+ The use of functional programming languages is generally emphasized in
+ academia rather than in commercial systems, although the Scala language
+ tends to be an exception to this rule due to its multi-paradigm affinity
+ to both functional and OO programming.
+\end_layout
+
+\begin_layout Standard
+Some of the main characteristics of functional languages, according to Normark,
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "web:normark:paradigms"
+
+\end_inset
+
+ are
+\end_layout
+
+\begin_layout Itemize
+Capability to accommodate higher-order functions (HOFs): HOFs are functions
+ that take other functions as their arguments, such as the map function,
+ and/or return functions 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "web:davies:paradigms"
+
+\end_inset
+
+.
+ They are used to re-factor code or reduce the amount of repeating or redundant
+ code.
+ 
+\end_layout
+
+\begin_layout Itemize
+Avoidance of side effects: Functions have side effects if, in addition to
+ returning a value, some state is modified or interactions with calling
+ functions of the outside world are observable.
+ Avoiding side effects makes functional languages purer and less prone to
+ errors.
+ 
+\end_layout
+
+\begin_layout Itemize
+Performance on immutable data: The state of immutable data is not changed
+ after it is created.
+ Thus, rather than altering existing values, copies are created to preserve
+ the original data.
+ A good example of this is the original ideal solution determined for Haskell's
+ quicksort algorithm 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "example:quicksort-Haskell"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Itemize
+Referential transparency property: Expressions are replaced with their values
+ without changing the behavior of the program.
+ The same effects and output occur if given the same input 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "osullivan-stewart-goerzen:2008"
+
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Itemize
+Application of lazy evaluation: In Haskell, function arguments are not evaluated
+ unless these values are required to evaluate the function call, permitting
+ the use of infinite lists in programs.
+ This laziness contrasts strict evaluation where the function's arguments
+ are evaluated before invoking the function, regardless of whether or not
+ these values are necessary.
+ 
+\end_layout
+
+\begin_layout Itemize
+Use of recursion: Iteration in functional languages is not technically possible
+ since it inherently requires side effects (see section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:imperative"
+
+\end_inset
+
+ for more details on side effects), focusing on the 
+\begin_inset Quotes eld
+\end_inset
+
+what
+\begin_inset Quotes erd
+\end_inset
+
+ rather than the 
+\begin_inset Quotes eld
+\end_inset
+
+how
+\begin_inset Quotes erd
+\end_inset
+
+ of functional programming 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "lipovaca:2011"
+
+\end_inset
+
+.
+ Thus, iteration is simulated via recursion --- functions invoke themselves
+ to be called over and over again.
+ 
+\end_layout
+
+\begin_layout Standard
+Examples of functional languages are OCaml, LISP, Clojure, and F#.
+ The functional language generated as well as used as the host language
+ in the CPCG is Haskell; LISP source code is also generated in this project.
+\end_layout
+
+\begin_layout Subsection
+Quicksort in Haskell
+\end_layout
+
+\begin_layout Standard
+The ideal quicksort solution in Haskell is shown in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "example:quicksort-Haskell"
+
+\end_inset
+
+ and the generated solution is in Appendix 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "chap:AppendixB"
+
+\end_inset
+
+, Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:qsHaskell"
+
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout LyX-Code
+module Quicksort where
+\end_layout
+
+\begin_layout LyX-Code
+import Data.List 
+\end_layout
+
+\begin_layout LyX-Code
+   	
+\end_layout
+
+\begin_layout LyX-Code
+quicksort :: Ord a => [a] -> [a]  
+\end_layout
+
+\begin_layout LyX-Code
+quicksort [] = []  
+\end_layout
+
+\begin_layout LyX-Code
+quicksort (x:xs) = quicksort less ++ (x:quicksort rest)    
+\end_layout
+
+\begin_layout LyX-Code
+  where (less, rest) = partition (< x) xs 
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Ideal Quicksort in Haskell
+\begin_inset CommandInset label
+LatexCommand label
+name "example:quicksort-Haskell"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The ideas behind this quicksort solution are discussed in more detail in
+ Chapter 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "chap:Implementation"
+
+\end_inset
+
+.
+ For now, however, note the use of 
+\begin_inset Quotes eld
+\end_inset
+
+(x:xs)
+\begin_inset Quotes erd
+\end_inset
+
+, indicating that a list data structure is being used.
+ Also note the line 
+\begin_inset Quotes eld
+\end_inset
+
+import Data.List
+\begin_inset Quotes erd
+\end_inset
+
+ to use Haskell's built-in partition function from the Data.List library
+ rather than a user-developed function to accomplish the same task.
+ 
+\end_layout
+
+\begin_layout Section
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:logic"
+
+\end_inset
+
+Concepts of Logic Languages 
+\end_layout
+
+\begin_layout Standard
+Logic programming is a paradigm based on first-order logic --- more precisely,
+ Horn clauses.
+ Programming is achieved by declaring predicates (facts) and rules of inference
+ (templates for building valid arguments) rather than using assignment and
+ control-flow structures 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "sebasta:2001"
+
+\end_inset
+
+.
+ These predicates and rules of inference define the scope of the problem.
+ The absence of functions infers that logic programming does not return
+ values.
+\end_layout
+
+\begin_layout Standard
+Just as imperative and OO are similar paradigms with regards to design decisions
+, semantics, etc., so too are the functional and logic paradigms similar
+ --- the logic paradigm also follows a declarative approach using mathematical
+ logic.
+ However, unlike functional programming, logic programming includes unification,
+ solving equations between terms with variables, and backtracking search.
+ 
+\end_layout
+
+\begin_layout Standard
+Programs implemented in logic programming languages are executed by querying
+ whether particular facts are deduced from the predicates and rules of inference
+ in the program 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "web:davies:paradigms"
+
+\end_inset
+
+.
+ Since the program actually solves the problem, the steps leading to the
+ solution are minimal and proving its validity is relatively simple compared
+ to other cross-paradigm languages.
+\end_layout
+
+\begin_layout Standard
+According to Apt, core ideas behind logic programming are as follows 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "mitchell:2002"
+
+\end_inset
+
+:
+\end_layout
+
+\begin_layout Itemize
+Computing takes place over the domain of all terms defined over a 
+\begin_inset Quotes eld
+\end_inset
+
+universal
+\begin_inset Quotes erd
+\end_inset
+
+ alphabet.
+\end_layout
+
+\begin_layout Itemize
+Values are assigned to variables by automatically generating substitutions
+ called Most General Unifiers (MGUs); these values contain variables called
+ logical variables 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "pierce:2002"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Itemize
+Control is provided by a single mechanism: automatic backtracking.
+\end_layout
+
+\begin_layout Standard
+Examples of logic programming languages are Mercury, Ciao, and Mozart-Oz.
+ The logic language used in the CPCG is 
+\begin_inset Formula $\lambda$
+\end_inset
+
+Prolog, a version of the well-known Prolog language intended for higher
+ order programming.
+\end_layout
+
+\begin_layout Subsection
+Quicksort in 
+\begin_inset Formula $\lambda$
+\end_inset
+
+Prolog
+\end_layout
+
+\begin_layout Standard
+The ideal quicksort solution in 
+\begin_inset Formula $\lambda$
+\end_inset
+
+Prolog is shown in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "example:quicksort-LP"
+
+\end_inset
+
+ and the generated solution is in Appendix 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "chap:AppendixB"
+
+\end_inset
+
+, Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:qsLP"
+
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout LyX-Code
+quicksort([], []).
+  
+\end_layout
+
+\begin_layout LyX-Code
+quicksort([Head | Tail], Sorted) :-  	
+\end_layout
+
+\begin_layout LyX-Code
+  partition(>(Head), Tail, Less, Rest),  	
+\end_layout
+
+\begin_layout LyX-Code
+  quicksort(Less, SortedLess), 	
+\end_layout
+
+\begin_layout LyX-Code
+  quicksort(Rest, SortedRest), 	
+\end_layout
+
+\begin_layout LyX-Code
+  append(SortedLess, [Head | SortedRest], Sorted).
+   
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Ideal Quicksort in 
+\begin_inset Formula $\lambda$
+\end_inset
+
+Prolog
+\begin_inset CommandInset label
+LatexCommand label
+name "example:quicksort-LP"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Unlike the Haskell solution seen previously, this 
+\begin_inset Formula $\lambda$
+\end_inset
+
+Prolog code does not need to import any libraries to use the built-in partition
+ function.
+ However, the design decision to use an immutable list data structure and
+ copy data is also used here.
+\end_layout
+
+\begin_layout Standard
+The rather minimalist quicksort solutions for Haskell and 
+\begin_inset Formula $\lambda$
+\end_inset
+
+Prolog are not considered 
+\begin_inset Quotes eld
+\end_inset
+
+true
+\begin_inset Quotes erd
+\end_inset
+
+ quicksort implementations since the elements are not sorted in-place, although
+ the problem is still solved via the divide-and-conquer algorithm.
+ 
+\end_layout
+
+\begin_layout Section
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:Similarity-Analysis"
+
+\end_inset
+
+Similarity Analysis of Paradigms
+\end_layout
+
+\begin_layout Standard
+The discussion of programming paradigms in the previous sections may have
+ only served to highlight their differences rather than their similarities,
+ so this section reviews some introductory examples of how the paradigms
+ relate.
+ 
+\end_layout
+
+\begin_layout Standard
+The most apparent comparison thus far is perhaps imperative versus OO programmin
+g.
+ Ignoring the details of the syntax in the two quicksort solutions for Lua
+ and Java respectively, it is clear these two languages share core features
+ as explored in their in-place quicksort pseudocode (Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:qs-pseudo-java-lua"
+
+\end_inset
+
+).
+ More examples of imperative and OO programming are found in a case study
+ of Imperative Objects 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "pierce:2002"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout LyX-Code
+quicksort(array) {
+\end_layout
+
+\begin_layout LyX-Code
+  if length(array) < 1 return
+\end_layout
+
+\begin_layout LyX-Code
+  quicksortRecursive(array, startIndex, endIndex)
+\end_layout
+
+\begin_layout LyX-Code
+}
+\end_layout
+
+\begin_layout LyX-Code
+   	
+\end_layout
+
+\begin_layout LyX-Code
+// Recursive step of quicksort
+\end_layout
+
+\begin_layout LyX-Code
+quicksortRecursive(array, leftIndex, rightIndex) {
+\end_layout
+
+\begin_layout LyX-Code
+  if leftIndex < rightIndex {
+\end_layout
+
+\begin_layout LyX-Code
+    pivot := partition(array, leftIndex, rightIndex)
+\end_layout
+
+\begin_layout LyX-Code
+    quicksortRecursive(array, left, pivot-1)
+\end_layout
+
+\begin_layout LyX-Code
+    quicksortRecursive(array, pivot+1, right)
+\end_layout
+
+\begin_layout LyX-Code
+  }
+\end_layout
+
+\begin_layout LyX-Code
+}
+\end_layout
+
+\begin_layout LyX-Code
+   	
+\end_layout
+
+\begin_layout LyX-Code
+// Order array so array[leftIndex] < pivot <= array[rightIndex]
+\end_layout
+
+\begin_layout LyX-Code
+partition(array, leftIndex, rightIndex) {
+\end_layout
+
+\begin_layout LyX-Code
+  pivot := array[rightIndex] 
+\end_layout
+
+\begin_layout LyX-Code
+  iterLeft := leftIndex-1
+\end_layout
+
+\begin_layout LyX-Code
+  loop iterRight from leftIndex to rightIndex-1 { 
+\end_layout
+
+\begin_layout LyX-Code
+    if array(iterRight < pivot) {
+\end_layout
+
+\begin_layout LyX-Code
+      iterLeft++
+\end_layout
+
+\begin_layout LyX-Code
+      swap(array, iterLeft, iterRight)
+\end_layout
+
+\begin_layout LyX-Code
+    }
+\end_layout
+
+\begin_layout LyX-Code
+  }
+\end_layout
+
+\begin_layout LyX-Code
+  swap(array, iterLeft+1, right)
+\end_layout
+
+\begin_layout LyX-Code
+  return iterLeft+1
+\end_layout
+
+\begin_layout LyX-Code
+}
+\end_layout
+
+\begin_layout LyX-Code
+   	
+\end_layout
+
+\begin_layout LyX-Code
+swap(array, index1, index2) {
+\end_layout
+
+\begin_layout LyX-Code
+  temp = array[index1]
+\end_layout
+
+\begin_layout LyX-Code
+  array[index1] = array[index2]
+\end_layout
+
+\begin_layout LyX-Code
+  array[index2] = temp
+\end_layout
+
+\begin_layout LyX-Code
+}
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+In-place Quicksort Pseudocode
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:qs-pseudo-java-lua"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The similarities between the paradigms do not, of course, end there.
+ In fact, using the F# functional programming language, it is possible to
+ define classes (such as the Vector2D class in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Vector2D-Class"
+
+\end_inset
+
+) and interfaces containing only abstract members (such as the IShape interface
+ in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:IShape-Interface"
+
+\end_inset
+
+) as used and inherited in Java or other OO languages.
+ These examples as well as more complete explanations of these phenomena
+ may be found in 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "web:davies:paradigms"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout LyX-Code
+type Vector2D(dx:float, dy:float) =
+\end_layout
+
+\begin_layout LyX-Code
+  let len = sqrt(dx*dx + dy*dy)
+\end_layout
+
+\begin_layout LyX-Code
+  member this.DX = dx
+\end_layout
+
+\begin_layout LyX-Code
+  member this.DY = dy
+\end_layout
+
+\begin_layout LyX-Code
+  member this.Length = len
+\end_layout
+
+\begin_layout LyX-Code
+  member this.Scale(k) = Vector2D(k*dx, k*dy)
+\end_layout
+
+\begin_layout LyX-Code
+  member this.ShiftXY(x,y) = Vector2D(dx = dx+x, dy = dy+y)
+\end_layout
+
+\begin_layout LyX-Code
+  static member Zero = Vector2D(dx=0.0, dy=0.0)
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Vector2D Class in F# 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "web:davies:paradigms"
+
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Vector2D-Class"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout LyX-Code
+open System.Drawing 
+\end_layout
+
+\begin_layout LyX-Code
+type IShape = 
+\end_layout
+
+\begin_layout LyX-Code
+  abstract Contains : Point -> bool 
+\end_layout
+
+\begin_layout LyX-Code
+  abstract BoundingBox : Rectangle 
+\end_layout
+
+\begin_layout LyX-Code
+let circle(center:Point,radius:int) = 
+\end_layout
+
+\begin_layout LyX-Code
+  { new IShape with 
+\end_layout
+
+\begin_layout LyX-Code
+    member x.Contains(p:Point) = 
+\end_layout
+
+\begin_layout LyX-Code
+      let dx = float32 (p.X - center.X) 
+\end_layout
+
+\begin_layout LyX-Code
+      let dy = float32 (p.Y - center.Y) 
+\end_layout
+
+\begin_layout LyX-Code
+      sqrt(dx*dx+dy*dy) <= float32 radius 
+\end_layout
+
+\begin_layout LyX-Code
+    member x.BoundingBox = 
+\end_layout
+
+\begin_layout LyX-Code
+      Rectangle( center.X-radius, center.Y-radius, 2*radius+1, 
+\end_layout
+
+\begin_layout LyX-Code
+      2*radius+1 )  
+\end_layout
+
+\begin_layout LyX-Code
+}
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+IShape Interface in F# 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "web:davies:paradigms"
+
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:IShape-Interface"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Functional programming may also be compared to imperative programming.
+ F#, for example, includes full support for imperative interaction via mutable
+ variables, arrays, loops, I/O, and exceptions (Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Imp-FS"
+
+\end_inset
+
+) 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "web:davies:paradigms"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout LyX-Code
+// Mutable Reference Cells
+\end_layout
+
+\begin_layout LyX-Code
+> let cell1 = ref1;; // create cell
+\end_layout
+
+\begin_layout LyX-Code
+val cell1 : int ref
+\end_layout
+
+\begin_layout LyX-Code
+> cell1;;
+\end_layout
+
+\begin_layout LyX-Code
+val it : int ref = { contents = 1 }
+\end_layout
+
+\begin_layout LyX-Code
+> !cell1;; // get contents 
+\end_layout
+
+\begin_layout LyX-Code
+val it : int = 1 
+\end_layout
+
+\begin_layout LyX-Code
+> cell1 := 3;;    // set contents 
+\end_layout
+
+\begin_layout LyX-Code
+val it : unit = ()
+\end_layout
+
+\begin_layout LyX-Code
+> cell1;; 
+\end_layout
+
+\begin_layout LyX-Code
+val it : int ref = { contents = 3 } 
+\end_layout
+
+\begin_layout LyX-Code
+> !cell1;; 
+\end_layout
+
+\begin_layout LyX-Code
+val it : int = 3 
+\end_layout
+
+\begin_layout LyX-Code
+   	
+\end_layout
+
+\begin_layout LyX-Code
+// Arrays
+\end_layout
+
+\begin_layout LyX-Code
+> let arr = [| 1.0; 2.0; 4.0 |];;
+\end_layout
+
+\begin_layout LyX-Code
+var arr : float[]
+\end_layout
+
+\begin_layout LyX-Code
+> arr.[1];; 
+\end_layout
+
+\begin_layout LyX-Code
+val it : float = 1.0 
+\end_layout
+
+\begin_layout LyX-Code
+> arr.[1] <- 3.0;; 
+\end_layout
+
+\begin_layout LyX-Code
+val it : unit = () 
+\end_layout
+
+\begin_layout LyX-Code
+> arr;; 
+\end_layout
+
+\begin_layout LyX-Code
+val it : float[] = [| 1.0; 3.0; 4.0 |]
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Imperative Interaction in F# 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "web:davies:paradigms"
+
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Imp-FS"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+So now imperative, functional, and OO programming have all been demonstrated
+ (at least at a high-level) to have common features and the capability to
+ support similar design decisions in their code.
+ But what about the logic paradigm? Using F# again to represent functional
+ languages, a library is built by combining HOFs and effects to support
+ logic programming, as shown in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Logic-FS"
+
+\end_inset
+
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "web:davies:paradigms"
+
+\end_inset
+
+ .
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout LyX-Code
+let unify2 (X,Y) (XX,YY) = X^=XX << Y^=YY 
+\end_layout
+
+\begin_layout LyX-Code
+let unify3 (X,Y,Z) (XX,YY,ZZ) = X^=XX << Y^=YY << Z^=ZZ 
+\end_layout
+
+\begin_layout LyX-Code
+   	
+\end_layout
+
+\begin_layout LyX-Code
+let rec append2 args k () = (newvar4(), unify3 args) |> 
+\end_layout
+
+\begin_layout LyX-Code
+fun((X, XS, YS, ZS), uniArgs) -> 
+\end_layout
+
+\begin_layout LyX-Code
+  uniArgs(nil, YS, YS)         <|k<|() 
+\end_layout
+
+\begin_layout LyX-Code
+  uniArgs((X^|XS),YS,(X^|ZS))  << append2(XS, YS, ZS) <|k<|()
+\end_layout
+
+\begin_layout LyX-Code
+   	
+\end_layout
+
+\begin_layout LyX-Code
+let kEnd vars s = printfn "
+\backslash
+ntrue:"
+\end_layout
+
+\begin_layout LyX-Code
+  for (v, tm) in vars do printfn "%s = %s" v (tm.ToString())
+\end_layout
+
+\begin_layout LyX-Code
+   	
+\end_layout
+
+\begin_layout LyX-Code
+let lpRun vnames lpGen = let vars = List.map newvar vnames 
+\end_layout
+
+\begin_layout LyX-Code
+  lpGen vars (kEnd (List.zip vnames vars)) () 
+\end_layout
+
+\begin_layout LyX-Code
+   	
+\end_layout
+
+\begin_layout LyX-Code
+lpRun ["ZS"] (fun [ZS] -> append2((%%1 ^| %%2 ^| nil), 
+\end_layout
+
+\begin_layout LyX-Code
+(%%3 ^| %%4 ^| nil), ZS)) 
+\end_layout
+
+\begin_layout LyX-Code
+// Output: 
+\end_layout
+
+\begin_layout LyX-Code
+// true 
+\end_layout
+
+\begin_layout LyX-Code
+// ZS = 1 | 2 | 3 | 4 | []
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Logic Programming in F# 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "web:davies:paradigms"
+
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Logic-FS"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Alternatively, logic languages like Prolog are used to create 
+\begin_inset Quotes eld
+\end_inset
+
+objects
+\begin_inset Quotes erd
+\end_inset
+
+ as in OO, such as the Locomotive class in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Locomotive-Class"
+
+\end_inset
+
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "hodas-miller:1990,mccabe:1988"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout LyX-Code
+MODULE locomotive.
+\end_layout
+
+\begin_layout LyX-Code
+LOCAL train.
+\end_layout
+
+\begin_layout LyX-Code
+   	
+\end_layout
+
+\begin_layout LyX-Code
+make_train(train(S,Cl,Co),S,Cl,Co).
+ color(train(S,Cl,Co),Cl).
+ 
+\end_layout
+
+\begin_layout LyX-Code
+speed(train(S,Cl,Co),S).
+ 
+\end_layout
+
+\begin_layout LyX-Code
+country(train(S,Cl,Co),Co).
+\end_layout
+
+\begin_layout LyX-Code
+journey_time(Train,Distance,Time) :- 
+\end_layout
+
+\begin_layout LyX-Code
+  speed(Train,S), Time is Distance div S.
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Locomotive Class in Prolog 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "hodas-miller:1990"
+
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Locomotive-Class"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The given examples may not be intuitive at first --- it is generally easier
+ to see similarities in languages when code is implemented with same the
+ design decisions and semantics.
+ This is especially true for recursive functions since recursion is supported
+ in all four paradigms.
+ 
+\end_layout
+
+\begin_layout Standard
+The notorious Fibonacci sequence is a well-known example of a recursive
+ algorithm.
+ The solutions displayed in Figures 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Fib-haskell"
+
+\end_inset
+
+, 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:fib-LP"
+
+\end_inset
+
+, 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Fib-java"
+
+\end_inset
+
+, and 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Fib-Lua"
+
+\end_inset
+
+ (written to make them more intuitively similar and with the pre-condition
+ to input non-negative arguments) may not be ideal for each language, although
+ they do represent the same design decision to implement via cascading recursion.
+ Generally, the recursive definition of the Fibonacci numbers is inefficient
+ since the previous two numbers must be re-calculated, even though they
+ had already been calculated before 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "web:fibonacci"
+
+\end_inset
+
+.
+ In order to style similar solutions, each language's benefits are not taken
+ full advantage of, such as Haskell's capability to define infinite lists
+ or Java and Lua's capability for memoization to cache previous computations.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout LyX-Code
+fibonacci 0 = 0 
+\end_layout
+
+\begin_layout LyX-Code
+fibonacci 1 = 1 
+\end_layout
+
+\begin_layout LyX-Code
+fibonacci n = (+) (fibonacci ((-) n 1)) (fibonacci ((-) n 2))
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Fibonacci Solution in Haskell
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Fib-haskell"
+
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout LyX-Code
+fibonacci(0, 0).
+ 
+\end_layout
+
+\begin_layout LyX-Code
+fibonacci(1, 1).
+ 
+\end_layout
+
+\begin_layout LyX-Code
+fibonacci(N, SN) :-     
+\end_layout
+
+\begin_layout LyX-Code
+    N1 is N - 1, N2 is N - 2,     
+\end_layout
+
+\begin_layout LyX-Code
+    fibonacci(N1, SN1), fibonacci(N2, SN2),     
+\end_layout
+
+\begin_layout LyX-Code
+    SN is SN1 + SN2.
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Fibonacci Solution in 
+\begin_inset Formula $\lambda$
+\end_inset
+
+Prolog
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:fib-LP"
+
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout LyX-Code
+public int fibonacci(int n) {
+\end_layout
+
+\begin_layout LyX-Code
+    if (n < 2) {                    
+\end_layout
+
+\begin_layout LyX-Code
+        return n;                 
+\end_layout
+
+\begin_layout LyX-Code
+    }                 
+\end_layout
+
+\begin_layout LyX-Code
+    return fibonacci(n-1) + fibonacci(n-2);             
+\end_layout
+
+\begin_layout LyX-Code
+}
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Fibonacci Solution in Java
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Fib-java"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout LyX-Code
+function fibonacci(n)
+\end_layout
+
+\begin_layout LyX-Code
+    if (n < 2) then
+\end_layout
+
+\begin_layout LyX-Code
+        return n
+\end_layout
+
+\begin_layout LyX-Code
+    end
+\end_layout
+
+\begin_layout LyX-Code
+    return fibonacci(n-1) + fibonacci(n-2)
+\end_layout
+
+\begin_layout LyX-Code
+end
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Fibonacci Solution in Lua
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Fib-Lua"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Chapter
+\begin_inset CommandInset label
+LatexCommand label
+name "chap:DSLs"
+
+\end_inset
+
+DSLs 
+\end_layout
+
+\begin_layout Standard
+After analyzing code for a sample of standard programs, a DSL was reverse-engine
+ered to incorporate common concepts and patterns and used in the CPCG tool.
+ Before delving further into the details of this software project and how
+ DSLs are involved, however, it is important to understand what DSLs are;
+ not to mention the reader benefits from learning more about internal and
+ external DSLs.
+ 
+\end_layout
+
+\begin_layout Standard
+This section of this report was influenced by the technical reports for
+ SAGA 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "beyak-carette:2011"
+
+\end_inset
+
+ and GOOL 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "costabile-carette:2012"
+
+\end_inset
+
+ as these projects are similar to the CPCG tool in this sense.
+ 
+\end_layout
+
+\begin_layout Section
+What are DSLs?
+\end_layout
+
+\begin_layout Standard
+DSLs belong to a class of special-purpose languages.
+ Unlike general-purpose programming languages, such as Java and Lua, or
+ general-purpose modeling languages, like UML, DSLs are generally small
+ programming or specification languages dedicated to concisely expressing
+ solutions to problems in a specific domain.
+ During the design and development phases of any project, programmers should
+ thoroughly understand the problems to be addressed, then determine if it
+ is worthwhile to create DSLs or the problem is better solved by using existing
+ general-purpose programming languages.
+\end_layout
+
+\begin_layout Standard
+The goal of DSLs is to simplify programming by focusing on certain types
+ of problems or domains and, thus, efficiently express narrower sets of
+ solutions within the context of that scope 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "web:java"
+
+\end_inset
+
+.
+ However, the limited scope of DSLs also limits their capabilities.
+ (For example, SQL is intended for relational database queries, but CSS
+ is used to describe the presentation semantics of documents written in
+ markup languages.) In other words, DSLs are not intended to solve problems
+ outside of their defined domain.
+ They are typically not Turing complete, so programming tasks in one DSL
+ is not always achievable using other DSLs.
+\end_layout
+
+\begin_layout Standard
+DSLs are implemented by either interpretation or code generation 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "web:fowler"
+
+\end_inset
+
+.
+ Interpretation refers to reading in the DSL script and then executing it
+ at runtime; of the two, it is the 
+\begin_inset Quotes eld
+\end_inset
+
+easier
+\begin_inset Quotes erd
+\end_inset
+
+ option to implement.
+ Despite that fact, however, code generation is sometimes essential and
+ the generated code is usually written in a high-level language, such as
+ Java or Lua.
+\end_layout
+
+\begin_layout Standard
+For non-programmers to accomplish specific tasks, DSLs are especially suitable
+ as they are intended to be intuitive --- hence, fluent and easier to read
+ and write.
+ Ideally, DSLs should improve the efficiency and productivity of users.
+ 
+\end_layout
+
+\begin_layout Section
+Internal versus External DSLs 
+\end_layout
+
+\begin_layout Standard
+DSLs are defined as internal (embedded) or external (freestanding) depending
+ on how they are designed and implemented.
+ Internal DSLs are akin to new languages within the host language as programming
+ is done in the host language, but with the aid of some integrated constructs.
+ They may not exist without the host language, especially if flow control
+ is dependent on primitives within the host language.
+ This type of DSL is particularly useful if the programmer wants the DSL
+ to feel like or resemble a specific language.
+ 
+\end_layout
+
+\begin_layout Standard
+By contrast, external DSLs are parsed independently of the host language
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "web:fowler"
+
+\end_inset
+
+; only the functionality of these DSLs is specified during development.
+ Any language and tools may be used to implement this type of DSL.
+ 
+\end_layout
+
+\begin_layout Standard
+Both types of DSLs have advantages and disadvantages, so a variety of factors
+ need to be considered when deciding between the two types for implementation
+ purposes.
+ A clear benefit of internal DSLs is that they provide the grammar, tools,
+ and parsers via the host language, so the effort to create them is relatively
+ low.
+ Furthermore, the developer may take advantage of the inherent capabilities
+ within the host language.
+ Unfortunately, it also means the developer and, thus, the expressiveness
+ of the DSL, is restricted by the host language's own flexibility, limitations,
+ and idiosyncrasies, not to mention limitations caused by the developer's
+ knowledge of the host language.
+ It is most advantageous to select host languages that are familiar, are
+ highly flexible, and have as few restrictions and idiosyncrasies as possible,
+ making it easier to exploit the metaprogramming capabilities of the host
+ language.
+ The code for internal DSLs is usually processed dynamically, implying that
+ more extensive error checking and validation is required.
+ 
+\end_layout
+
+\begin_layout Standard
+External DSLs, on the other hand, have the advantage of flexibility since
+ they employ their own custom grammar and syntax.
+ The developer selects the language's symbols, operators, constructs, and
+ structures as desired to fit the intended domain.
+ Generally, this customization allows for a more natural interface with
+ the DSL, making it easier for domain experts to express ideas 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "beyak-carette:2011"
+
+\end_inset
+
+.
+ However, full compilers need to be developed, including intermediate representa
+tions of code, to parse and process external DSLs in order to map syntax
+ to semantics; this extra step is a drawback with regards to programming
+ complexity and the development workload.
+ In general, external DSLs provide better control than internal DSLs when
+ validating DSL syntax since the syntax is validated as the grammar is defined.
+ 
+\end_layout
+
+\begin_layout Section
+Relevance to Project
+\end_layout
+
+\begin_layout Standard
+Although it is, of course, possible to implement an external DSL in the
+ CPCG, an internal DSL was created for simplicity, using Haskell as the
+ host language.
+ The intended users of this DSL are programmers or individuals familiar
+ with development.
+ The domain of this project's DSL involves code generation for the four
+ primary languages (
+\begin_inset Formula $\lambda$
+\end_inset
+
+Prolog, Java, Lua, and Haskell) and other secondary programming languages
+ (C, C#, Lisp, Scala, and Prolog).
+\end_layout
+
+\begin_layout Chapter
+\begin_inset CommandInset label
+LatexCommand label
+name "chap:Requirements"
+
+\end_inset
+
+Requirements
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+Requirements are statements of varying levels of detail that indicate the
+ system attributes, capabilities, characteristics, or quality.
+ Functional and sometimes non-functional requirements are generally prepared
+ during the early stages of the development lifecycle and re-verified during
+ the testing phase later on.
+ Functional requirements define what the system is supposed to 
+\begin_inset Quotes eld
+\end_inset
+
+do
+\begin_inset Quotes erd
+\end_inset
+
+.
+ Contrarily, non-functional requirements define how the system is supposed
+ to 
+\begin_inset Quotes eld
+\end_inset
+
+be
+\begin_inset Quotes erd
+\end_inset
+
+; as such, non-functional requirements influence the design of the project.
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The goal of this project is to demonstrate that there exists a language
+ of design from which one may generate code from abstract algorithms.
+ In order to determine what the requirements are, the first step is to understan
+d why they are needed.
+ The following subsections explore the user, language, and software requirements
+ of the CPCG project in more detail.
+ 
+\end_layout
+
+\begin_layout Section
+User Requirements
+\end_layout
+
+\begin_layout Standard
+The user requirements for the CPCG project are brief, but important:
+\end_layout
+
+\begin_layout Itemize
+Users are programmers or other individuals with technical backgrounds in
+ at least one of the four programming paradigms.
+\end_layout
+
+\begin_layout Itemize
+Users are responsible for ensuring that the selected design decisions are
+ compatible (e.g., should not enter both list and array data structures).
+ Furthermore, design choices that are unnecessary for the selected algorithm
+ are ignored (e.g., selecting a pivot for the Fibonacci sequence).
+\end_layout
+
+\begin_layout Section
+Language Requirements
+\end_layout
+
+\begin_layout Standard
+Adapted from the GOOL project 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "costabile-carette:2012"
+
+\end_inset
+
+, the following is a list of requirements and limitations that are incorporated
+ in the design and implementation of the CPCG's DSLs:
+\end_layout
+
+\begin_layout Itemize
+The internal language is purposefully limited such that it abstracts only
+ fundamental cross-paradigm concepts and patterns; specialized features
+ are instead detailed in the paradigm AST modules.
+ For example, for- or while-loops are used in OO languages, but not in functiona
+l languages which use recursion to perform repetition.
+\end_layout
+
+\begin_layout Itemize
+The internal language is expressive enough to produce a choice selection
+ of simple, standard programs.
+\end_layout
+
+\begin_layout Itemize
+The design language is limited to the choices selected by the researcher
+ for the purpose of proving the existence of a tangible language of design.
+ Concepts that are not included in the design language are subsequently
+ unable to generate the desired code.
+ 
+\end_layout
+
+\begin_layout Section
+Software Requirements
+\end_layout
+
+\begin_layout Standard
+This section describes the operation of the system rather than its specific
+ behaviours, as follows:
+\end_layout
+
+\begin_layout Itemize
+The cross-paradigm abstract concepts are demonstrated in the internal language.
+ The CPCG uses these fundamental features to generate code in multiple languages
+, despite its singular design.
+ 
+\end_layout
+
+\begin_layout Itemize
+The software uses generic pseudocode to resemble any of the four paradigms
+ to translate code written in the DSL into intermediate representations
+ of code in any paradigm and then into compilable source code.
+ 
+\end_layout
+
+\begin_layout Itemize
+The process of generating code is unambiguous, complete, and consistent.
+ Users are able to compile and run the generated code without any issues,
+ regardless of the language it is written in.
+ 
+\end_layout
+
+\begin_layout Itemize
+The CPCG addresses a number of software quality metrics, such as reliability,
+ maintainability, testability, and understandability.
+ 
+\end_layout
+
+\begin_layout Standard
+These software requirements are similarly adapted from 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "costabile-carette:2012"
+
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Chapter
+\begin_inset CommandInset label
+LatexCommand label
+name "chap:Methodology"
+
+\end_inset
+
+Design Methodology
+\end_layout
+
+\begin_layout Standard
+The first step in the design phase consisted of understanding what was to
+ be proven; that is to say, the existence of a language of design and of
+ shared core concepts between different programming languages given an internal
+ implementation and an external set of design choices.
+ Prior to actually developing the language of design, however, intermediary
+ steps were taken to explore and work with some anticipated common features.
+ The design methodology of this project was influenced by the GOOL project
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "costabile-carette:2012"
+
+\end_inset
+
+, which generates code in OO languages.
+ The CPCG essentially started out as an expansion of the GOOL project to
+ generate code in cross-paradigm languages, rather than OO alone, before
+ the influence of design choices was explored.
+ 
+\end_layout
+
+\begin_layout Section
+DSL Design
+\end_layout
+
+\begin_layout Standard
+A key design decision of this project was the use of internal DSLs.
+ The DSL for the internal language abstractly links together the assessed
+ programming languages, regardless of their associated paradigm(s), and
+ simplifies the intermediate representations of code.
+ Prior to constructing the DSL for the CPCG, a series of solutions for the
+ standard quicksort function were developed or collected (from sources such
+ as 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "zhu:2013"
+
+\end_inset
+
+, etc.) and examined to create a set of ideal solutions.
+ (These solutions are included for reference in the appropriate paradigm
+ sections in Chapter 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "chap:Paradigms"
+
+\end_inset
+
+.) In order to identify enough shared concepts from these solutions to start
+ developing the DSL, quicksort was translated into the pseudocode in Figure
+ 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Quicksort-Pseudocode"
+
+\end_inset
+
+ to provide a high-level description of the algorithm.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout LyX-Code
+quicksort(items)
+\end_layout
+
+\begin_layout LyX-Code
+  if items.length < 1 do nothing
+\end_layout
+
+\begin_layout LyX-Code
+  else
+\end_layout
+
+\begin_layout LyX-Code
+    choose index
+\end_layout
+
+\begin_layout LyX-Code
+    pivot := items[index]
+\end_layout
+
+\begin_layout LyX-Code
+    partition pivot less rest
+\end_layout
+
+\begin_layout LyX-Code
+    return quicksort(less) ++ pivot ++ quicksort(rest) 
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Quicksort Pseudocode
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Quicksort-Pseudocode"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The next steps involved abstracting the common concepts by using an AST.
+ The AST for the DSL is composed of data types and structures in Haskell.
+ Using individual analysis as well as referencing structures on 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "costabile-carette:2012"
+
+\end_inset
+
+, some features that were initially identified as patterns are 
+\end_layout
+
+\begin_layout Itemize
+Program
+\end_layout
+
+\begin_layout Itemize
+Function
+\end_layout
+
+\begin_layout Itemize
+Nodes: Variable, Integer, Selector (such as length)
+\end_layout
+
+\begin_layout Itemize
+Expressions: Node, Let, If, Concatenation, Partition, Choose, Operation,
+ Self, Unit
+\end_layout
+
+\begin_layout Itemize
+Operations: Less, Minus, Plus, Times, Divide, etc.
+\end_layout
+
+\begin_layout Standard
+These concepts were used to develop the initial internal AST type as displayed
+ in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Initial-Internal-AST"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout LyX-Code
+data Program = Program Name [Function]
+\end_layout
+
+\begin_layout LyX-Code
+type Name = String
+\end_layout
+
+\begin_layout LyX-Code
+   	
+\end_layout
+
+\begin_layout LyX-Code
+data Function = Funct [Expr]
+\end_layout
+
+\begin_layout LyX-Code
+   	
+\end_layout
+
+\begin_layout LyX-Code
+data Expr = NodeExpr Node                                  
+\end_layout
+
+\begin_layout LyX-Code
+          | LetExpr (Binding,Expr) [Expr]             
+\end_layout
+
+\begin_layout LyX-Code
+          | IfExpr Conditional         
+\end_layout
+
+\begin_layout LyX-Code
+          | ConcatExpr Concatenation                
+\end_layout
+
+\begin_layout LyX-Code
+          | PartExpr Node Node 
+\end_layout
+
+\begin_layout LyX-Code
+          | ChooseExpr Node Node         
+\end_layout
+
+\begin_layout LyX-Code
+          | OperExpr Operations              
+\end_layout
+
+\begin_layout LyX-Code
+          | SelfExpr [Expr]
+\end_layout
+
+\begin_layout LyX-Code
+   	
+\end_layout
+
+\begin_layout LyX-Code
+data Concatenation = Concat2 Node Node
+\end_layout
+
+\begin_layout LyX-Code
+                   | Concat3 Node Node Node
+\end_layout
+
+\begin_layout LyX-Code
+   	
+\end_layout
+
+\begin_layout LyX-Code
+data Conditional = IfExpr Expr Expr Expr
+\end_layout
+
+\begin_layout LyX-Code
+   	
+\end_layout
+
+\begin_layout LyX-Code
+data Binding = BVar Variable             
+\end_layout
+
+\begin_layout LyX-Code
+             | BPair (Variable,Variable) 
+\end_layout
+
+\begin_layout LyX-Code
+type Variable = String
+\end_layout
+
+\begin_layout LyX-Code
+   	
+\end_layout
+
+\begin_layout LyX-Code
+data Node = Var Variable           
+\end_layout
+
+\begin_layout LyX-Code
+          | Int Integer                       
+\end_layout
+
+\begin_layout LyX-Code
+          | Sel Variable Property
+\end_layout
+
+\begin_layout LyX-Code
+   	
+\end_layout
+
+\begin_layout LyX-Code
+data Property = Length
+\end_layout
+
+\begin_layout LyX-Code
+   	
+\end_layout
+
+\begin_layout LyX-Code
+data Operations = Less Node Node                      
+\end_layout
+
+\begin_layout LyX-Code
+                | Minus Node Node                    
+\end_layout
+
+\begin_layout LyX-Code
+                | Plus Node Node                  
+\end_layout
+
+\begin_layout LyX-Code
+                | Times Node Node                  
+\end_layout
+
+\begin_layout LyX-Code
+                | Divide Node Node
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Initial Internal AST Type
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Initial-Internal-AST"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The DSL was updated continuously based on the needs of the code generator
+ as additional code samples and research papers were used to help identify
+ concepts of and promote a richer language.
+ A sample of the final internal AST type is included in Section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:Internal-Language"
+
+\end_inset
+
+, Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Sample-internal-AST"
+
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+Information about the design DSL may be found in Chapter 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "chap:Design-Language"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Section
+Intermediate Representations of Code
+\end_layout
+
+\begin_layout Standard
+Due to general syntactic and semantic differences of code across the four
+ paradigms, rendering code from the internal DSL immediately to the intended
+ language is not easily accomplished.
+ Therefore, representations of code following the format of the intended
+ paradigm (but written in the project's DSL) are used as intermediary steps,
+ one per paradigm.
+ 
+\end_layout
+
+\begin_layout Standard
+To generate 
+\begin_inset Quotes eld
+\end_inset
+
+almost
+\begin_inset Quotes erd
+\end_inset
+
+ source code, the CPCG starts by using the ASTs specific to the paradigms
+ along with the algorithm implementations written in the DSL, such as ImplQuicks
+ort.
+ Other modules, referred to in this report as intermediary or 
+\begin_inset Quotes eld
+\end_inset
+
+To
+\begin_inset Quotes erd
+\end_inset
+
+ modules, are then used to convert programs from the internal AST type to
+ the paradigm AST types.
+ 
+\end_layout
+
+\begin_layout Section
+Pretty Printing
+\end_layout
+
+\begin_layout Standard
+Once programs are rendered into their intermediate representations by the
+ process mentioned above, applying the syntactical details to the code is
+ a fairly straightforward process.
+ Each implementation language has its own pretty printer to build compilable,
+ working source code using the PrettyPrint package 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "web:hackage"
+
+\end_inset
+
+; although the reader should note that some necessary functions or structures
+ are assumed to exist, such as the init function in 
+\begin_inset Formula $\lambda$
+\end_inset
+
+Prolog to return all but the last element in lists or the List structure
+ (and its associated functions) in C.
+ The printers and their accompanying dictionaries should only add syntactical
+ details to the structures, any abstraction details having already been
+ applied in the other steps of the code generation process.
+ 
+\end_layout
+
+\begin_layout Chapter
+\begin_inset CommandInset label
+LatexCommand label
+name "chap:CPCG"
+
+\end_inset
+
+CPCG Program
+\end_layout
+
+\begin_layout Standard
+This chapter gives an overview of the CPCG software tool, including the
+ internal language, paradigm-specific modules, and language-specific modules.
+ There are also sections describing compromises made in this project as
+ well as some suggestions for future enhancements.
+\end_layout
+
+\begin_layout Section
+Internal Language
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:Internal-Language"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Recall that the internal language represents some of the core concepts shared
+ between implementation languages within the programming paradigms.
+ To generate code, the internal language is used with intermediate representatio
+ns of paradigm code and pretty printers for the individual programming languages
+; these intermediate representations directly produce the connections between
+ the DSL and the compilable code.
+ A sample of the internal AST type is included in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Sample-internal-AST"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout LyX-Code
+data Program = Program [D.Choices] Name [Declaration] [Function]  
+\end_layout
+
+\begin_layout LyX-Code
+type Name = String
+\end_layout
+
+\begin_layout LyX-Code
+   	
+\end_layout
+
+\begin_layout LyX-Code
+data Function = Funct Access Declaration [Expr]  
+\end_layout
+
+\begin_layout LyX-Code
+   	
+\end_layout
+
+\begin_layout LyX-Code
+data Access = Public | Private
+\end_layout
+
+\begin_layout LyX-Code
+   	
+\end_layout
+
+\begin_layout LyX-Code
+data Declaration = FDecl (Type,[D.Choices]) Name [Declaration] 
+\end_layout
+
+\begin_layout LyX-Code
+                 | PDecl (Type,[D.Choices]) Name 
+\end_layout
+
+\begin_layout LyX-Code
+   	
+\end_layout
+
+\begin_layout LyX-Code
+data Expr  = NodeExpr Node                                  
+\end_layout
+
+\begin_layout LyX-Code
+           | LetExpr (Binding,Expr) [Expr]      
+\end_layout
+
+\begin_layout LyX-Code
+           | IfExpr Expr [Expr] [Expr] 
+\end_layout
+
+\begin_layout LyX-Code
+           | ConcatExpr [D.Choices] Concatenation   
+\end_layout
+
+\begin_layout LyX-Code
+           | OperExpr Operations               
+\end_layout
+
+\begin_layout LyX-Code
+           | SelfExpr Type [Expr]
+\end_layout
+
+\begin_layout LyX-Code
+           | CallExpr Type Name [Expr]
+\end_layout
+
+\begin_layout LyX-Code
+   	
+\end_layout
+
+\begin_layout LyX-Code
+data Concatenation = List Node Expr | Concat Name Expr Expr 
+\end_layout
+
+\begin_layout LyX-Code
+   	
+\end_layout
+
+\begin_layout LyX-Code
+data Binding = BVar (Type,[D.Choices]) Variable
+\end_layout
+
+\begin_layout LyX-Code
+             | BPair (Binding,Binding)
+\end_layout
+
+\begin_layout LyX-Code
+type Variable = String
+\end_layout
+
+\begin_layout LyX-Code
+   	
+\end_layout
+
+\begin_layout LyX-Code
+data Node = Var Variable
+\end_layout
+
+\begin_layout LyX-Code
+          | Int Integer
+\end_layout
+
+\begin_layout LyX-Code
+          | Sel Node Property 
+\end_layout
+
+\begin_layout LyX-Code
+   	
+\end_layout
+
+\begin_layout LyX-Code
+type Index = Node 
+\end_layout
+
+\begin_layout LyX-Code
+data Property = Length [D.Choices] 
+\end_layout
+
+\begin_layout LyX-Code
+              | Get [D.Choices] Index Index 
+\end_layout
+
+\begin_layout LyX-Code
+              | Set [D.Choices] Index Node
+\end_layout
+
+\begin_layout LyX-Code
+   	
+\end_layout
+
+\begin_layout LyX-Code
+data Operations = Less Node Node
+\end_layout
+
+\begin_layout LyX-Code
+                | Greater Node Node
+\end_layout
+
+\begin_layout LyX-Code
+                | Minus Node Node
+\end_layout
+
+\begin_layout LyX-Code
+                | Plus Node Node      
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Sample from Final Internal AST Type
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Sample-internal-AST"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Some structures were removed from the initial DSL (and perhaps moved to
+ the paradigm modules) as they were later discovered not to be common across
+ all paradigms, while other structures and types were added as befit other
+ algorithms to be generated.
+ Examination of quicksort solutions in Haskell (Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "example:quicksort-Haskell"
+
+\end_inset
+
+) and Java (Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "example:quicksort-Java"
+
+\end_inset
+
+), for example, observes that two different structures are used to store
+ the data to be sorted --- list and array.
+ The DSL has to represent both these ideas without compromising abstraction
+ in one language or the other.
+ 
+\end_layout
+
+\begin_layout Section
+Paradigm Modules
+\end_layout
+
+\begin_layout Standard
+This section outlines the modules used to generate code in the various paradigms.
+\end_layout
+
+\begin_layout Subsection
+Paradigm ASTs
+\end_layout
+
+\begin_layout Standard
+The ASTFunctional, ASTImperative, ASTLogic, and ASTOO files store the ASTs
+ for the programming paradigms, one for each of the four.
+ Intuitively, there are many data structures that these modules share with
+ the internal AST type, although there are also some that differ based on
+ the needs of the language and the ways in which algorithms are generated.
+ Consider binding structures (Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Binding-Structures"
+
+\end_inset
+
+), for instance.
+ Languages such as 
+\begin_inset Formula $\lambda$
+\end_inset
+
+Prolog (logic) and Haskell (functional) allow pair bindings, while Java
+ (OO) and Lua (imperative) generally only make use of single bindings, unless
+ additional structures or classes are created or call-by-reference is used.
+ Note, however, that the AST for OO includes a pair binding structure since
+ one of the OO languages explored --- Scala --- does, in fact, allow pair
+ bindings and must be accommodated.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout LyX-Code
+-- Logic AST
+\end_layout
+
+\begin_layout LyX-Code
+data Binding = BVar Variable              
+\end_layout
+
+\begin_layout LyX-Code
+             | BPair (Variable,Variable)   
+\end_layout
+
+\begin_layout LyX-Code
+  deriving Show
+\end_layout
+
+\begin_layout LyX-Code
+   	
+\end_layout
+
+\begin_layout LyX-Code
+-- Functional and OO ASTs
+\end_layout
+
+\begin_layout LyX-Code
+data Binding = BVar (Type,Struct) Variable              
+\end_layout
+
+\begin_layout LyX-Code
+             | BPair (Variable,Variable)   
+\end_layout
+
+\begin_layout LyX-Code
+  deriving Show
+\end_layout
+
+\begin_layout LyX-Code
+   	
+\end_layout
+
+\begin_layout LyX-Code
+-- Imperative AST
+\end_layout
+
+\begin_layout LyX-Code
+data Binding = BVar (Type,Struct) Variable
+\end_layout
+
+\begin_layout LyX-Code
+  deriving Show
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Binding Structures
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Binding-Structures"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Another item of note is the abstraction of types.
+ Although some languages (such as Java) require specific types to be declared
+ in functions and their parameters, other languages (such as 
+\begin_inset Formula $\lambda$
+\end_inset
+
+Prolog) do not require this level of detail.
+ This has less to do with the type of paradigm these languages are in and
+ more to do with type inference.
+ Some languages require types to be explicitly given because inference is
+ undecidable in certain situations.
+\end_layout
+
+\begin_layout Subsection
+Intermediary Modules
+\end_layout
+
+\begin_layout Standard
+The intermediary modules restructure code written in the internal language
+ to the appropriate paradigm style, producing the aforementioned intermediate
+ representations of code.
+ There are generally few, but important, changes that take place here that
+ alter the format of the code.
+ Code for languages within the same paradigm is generated from the same
+ intermediary modules as their code is semantically similar, so syntax has
+ little relevance.
+\end_layout
+
+\begin_layout Standard
+Sample code from the intermediary module for functional programming is shown
+ in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Sample-ToFunct"
+
+\end_inset
+
+; the modules for the other paradigms are designed similarly.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout LyX-Code
+toFunct :: I.Program -> F.Module 
+\end_layout
+
+\begin_layout LyX-Code
+toFunct (I.Program ch nm decllist fnlist) =
+\end_layout
+
+\begin_layout LyX-Code
+    if any (`elem` ch) [D.Para Log,D.Para Imp,D.Para OO]
+\end_layout
+
+\begin_layout LyX-Code
+        then error "Invalid paradigm choice"    
+\end_layout
+
+\begin_layout LyX-Code
+        else if any (`elem` ch) [D.Lang C, D.Lang Java, 
+\end_layout
+
+\begin_layout LyX-Code
+        D.Lang LP, D.Lang Prolog, D.Lang Lua]
+\end_layout
+
+\begin_layout LyX-Code
+            then error "Invalid language choice"
+\end_layout
+
+\begin_layout LyX-Code
+            else if (elem (D.Loop Iter) ch)
+\end_layout
+
+\begin_layout LyX-Code
+                then error "No loop iteration available"
+\end_layout
+
+\begin_layout LyX-Code
+                else if (elem (D.Lang Haskell) ch && elem 
+\end_layout
+
+\begin_layout LyX-Code
+                (D.Lib Part) ch)
+\end_layout
+
+\begin_layout LyX-Code
+                    then F.Module nm ["Data.List (partition)"] 
+\end_layout
+
+\begin_layout LyX-Code
+                    fns 
+\end_layout
+
+\begin_layout LyX-Code
+                    else if (elem (D.Lang Haskell) ch && elem 
+\end_layout
+
+\begin_layout LyX-Code
+                    (D.Str Array) ch
+\end_layout
+
+\begin_layout LyX-Code
+                        then F.Module nm ["Control.Monad.ST", 
+\end_layout
+
+\begin_layout LyX-Code
+                        "Data.Array.ST", "Data.Foldable", 
+\end_layout
+
+\begin_layout LyX-Code
+                        "Control.Monad"] fns
+\end_layout
+
+\begin_layout LyX-Code
+                        else F.Module nm [] fns
+\end_layout
+
+\begin_layout LyX-Code
+  where
+\end_layout
+
+\begin_layout LyX-Code
+    fns = map build fnlist               
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Sample from Intermediary Module for Functional Programming
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Sample-ToFunct"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Language Printers 
+\end_layout
+
+\begin_layout Standard
+The pretty printers for Java, Lua, Haskell, and 
+\begin_inset Formula $\lambda$
+\end_inset
+
+Prolog are the primary printer files as these languages were originally
+ selected for this software project.
+ Using the existing paradigm modules, however, the researcher developed
+ printers for the following languages in addition to the first four:
+\end_layout
+
+\begin_layout Itemize
+Functional: Lisp and Scala 
+\end_layout
+
+\begin_layout Itemize
+OO: Scala and C# 
+\end_layout
+
+\begin_layout Itemize
+Imperative: C 
+\end_layout
+
+\begin_layout Standard
+As portrayed above, Scala has the curious trait that it is used for both
+ functional and OO programming.
+ In fact, numerous programs are successfully generated using functional
+ paradigm modules and design choices and OO paradigm modules and design
+ choices, once again giving evidence to the shared semantic core between
+ cross-paradigm languages.
+\end_layout
+
+\begin_layout Standard
+Sample code from the Haskell pretty printer is included in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Sample-PrintHaskell"
+
+\end_inset
+
+.
+ Notice how 
+\begin_inset Quotes eld
+\end_inset
+
+self
+\begin_inset Quotes erd
+\end_inset
+
+ is used as a parameter in almost every line of all the pretty printers,
+ so that functions have the capability to call themselves recursively as
+ needed.
+ Also note how the code generated for Haskell and Java clearly differ at
+ this point.
+ For instance, Java uses infix notation while Haskell (in this software)
+ uses prefix notation.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout LyX-Code
+printHaskell :: Module -> Doc 
+\end_layout
+
+\begin_layout LyX-Code
+printHaskell (Module nm imps fns) = text "module" <+> text nm 
+\end_layout
+
+\begin_layout LyX-Code
+    <+> text "where" $$ impts imps $$ vcat (map build fns)
+\end_layout
+
+\begin_layout LyX-Code
+   	
+\end_layout
+
+\begin_layout LyX-Code
+build :: Function -> Doc  
+\end_layout
+
+\begin_layout LyX-Code
+build (Funct (FDecl _ nm paramlist) exs) = text nm 
+\end_layout
+
+\begin_layout LyX-Code
+    <+> params paramlist <+> equals $+$ nest 4 (expr nm exs)
+\end_layout
+
+\begin_layout LyX-Code
+   	
+\end_layout
+
+\begin_layout LyX-Code
+params :: [Declaration] -> Doc 
+\end_layout
+
+\begin_layout LyX-Code
+params [] = empty 
+\end_layout
+
+\begin_layout LyX-Code
+params (x:xs) = foldl1 (<+>) (map (
+\backslash
+x -> pdecls x) (x:xs)) 
+\end_layout
+
+\begin_layout LyX-Code
+  where    
+\end_layout
+
+\begin_layout LyX-Code
+    pdecls (PDecl (t,s) v) = text v
+\end_layout
+
+\begin_layout LyX-Code
+   	
+\end_layout
+
+\begin_layout LyX-Code
+impts :: [String] -> Doc 
+\end_layout
+
+\begin_layout LyX-Code
+impts [] = empty 
+\end_layout
+
+\begin_layout LyX-Code
+impts (x:xs) = text "import" <+> text x $$ impts xs
+\end_layout
+
+\begin_layout LyX-Code
+   	
+\end_layout
+
+\begin_layout LyX-Code
+expr :: String -> Expr -> Doc 
+\end_layout
+
+\begin_layout LyX-Code
+expr self (NodeExpr nd) = node self nd 
+\end_layout
+
+\begin_layout LyX-Code
+expr self (IfExpr ex1 ex2 ex3) = text "if" <+> expr self ex1 
+\end_layout
+
+\begin_layout LyX-Code
+    $+$ nest 4 (text "then do" $+$ nest 4 (expr self ex2) 
+\end_layout
+
+\begin_layout LyX-Code
+    $$ text "else do" $+$ nest 4 (expr self ex3)) 
+\end_layout
+
+\begin_layout LyX-Code
+expr self (OperExpr o) = oper self o 
+\end_layout
+
+\begin_layout LyX-Code
+expr self (SelfExpr t p) = callexpr self t self p 
+\end_layout
+
+\begin_layout LyX-Code
+expr self (LetExpr b ex) = letexpr self b 
+\end_layout
+
+\begin_layout LyX-Code
+    $+$ nest 4 (expr self ex) 
+\end_layout
+
+\begin_layout LyX-Code
+expr self (CallExpr t nm p) = callexpr self t nm p
+\end_layout
+
+\begin_layout LyX-Code
+expr self (AsstExpr nd ex) = node self nd <+> text "<-" 
+\end_layout
+
+\begin_layout LyX-Code
+    <+> expr self ex
+\end_layout
+
+\begin_layout LyX-Code
+expr self (ConcatExpr c) = concatexpr self c 
+\end_layout
+
+\begin_layout LyX-Code
+expr self (Exprs ex1 ex2) = expr self ex1 $$ expr self ex2 
+\end_layout
+
+\begin_layout LyX-Code
+expr self (PairExpr (ex1,ex2)) = parens $ expr self ex1 
+\end_layout
+
+\begin_layout LyX-Code
+    <^> expr self ex2 
+\end_layout
+
+\begin_layout LyX-Code
+expr self (PartExpr p i) = text "partition" 
+\end_layout
+
+\begin_layout LyX-Code
+    <+> parens (less <+> node self p) <+> node self i 
+\end_layout
+
+\begin_layout LyX-Code
+expr self (ArrExpr (StartIndex,EndIndex nd)) = integer 0 
+\end_layout
+
+\begin_layout LyX-Code
+    <+> parens (node self nd <> minus <> integer 1)             
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Sample from Haskell Pretty Printer
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Sample-PrintHaskell"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Compromises
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:Compromises"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This project is primarily focused on proving that common features exist
+ between the four paradigms and that a language of design is tangible.
+ The generated code was mainly verified for compilability and workability
+ rather than idealness; in some cases, even the high-level code contains
+ compromises.
+ Due to scope and time constraints, abstracting cross-paradigm concepts
+ required a fair bit of flexibility and compromise during the development
+ of the CPCG, at least during these early stages of research.
+ 
+\end_layout
+
+\begin_layout Standard
+Consider only the last line of the high-level quicksort pseudocode shown
+ in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:qs-comp-ex"
+
+\end_inset
+
+ as a compromise example.
+ The keyword 
+\begin_inset Quotes eld
+\end_inset
+
+return
+\begin_inset Quotes erd
+\end_inset
+
+ is used, although this concept is not always needed since it is implicit
+ in some languages, such as Haskell.
+ The line also shows the concatenation of 
+\begin_inset Quotes eld
+\end_inset
+
+less
+\begin_inset Quotes erd
+\end_inset
+
+ (containing elements less than the pivot value), 
+\begin_inset Quotes eld
+\end_inset
+
+pivot
+\begin_inset Quotes erd
+\end_inset
+
+, and 
+\begin_inset Quotes eld
+\end_inset
+
+rest
+\begin_inset Quotes erd
+\end_inset
+
+ (containing all other elements); while this is valid for lists, concatenation
+ is not required for arrays.
+ In these and other comparable situations, concepts are nevertheless included
+ in the internal language to represent the ideas behind them, explicit or
+ not, which may be seen as a compromise to the DSL's integrity to some users.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout LyX-Code
+ return quicksort(less) ++ pivot ++ quicksort(rest) 
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Compromise Example
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:qs-comp-ex"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+A similar idea was applied at the code generation level.
+ Compare the ideal quicksort solution in Haskell (Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "example:quicksort-Haskell"
+
+\end_inset
+
+) to the generated solution (Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:qsHaskell"
+
+\end_inset
+
+); the first thing one may notice is the use of len (i.e., length) and indices
+ in both the array and list versions of the algorithm.
+ It is apparent that these parameters are not necessary in any of the explored
+ languages for the list version of quicksort.
+ However, due to their necessity in the array version, it is included in
+ the core program file for simplicity and, hence, is generated in both versions
+ of quicksort.
+ 
+\end_layout
+
+\begin_layout Standard
+Another compromise is the assumption that certain needed structures or methods
+ exist elsewhere, such as the list structure and methods (e.g., concat and
+ length) for C's list version of quicksort (Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:c-list"
+
+\end_inset
+
+, adapted from 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "web:arora:c"
+
+\end_inset
+
+).
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout LyX-Code
+struct List {   
+\end_layout
+
+\begin_layout LyX-Code
+    long val;   
+\end_layout
+
+\begin_layout LyX-Code
+    struct List *next;
+\end_layout
+
+\begin_layout LyX-Code
+};
+\end_layout
+
+\begin_layout LyX-Code
+   	   	
+\end_layout
+
+\begin_layout LyX-Code
+long length(struct List *tlist) {
+\end_layout
+
+\begin_layout LyX-Code
+    struct List *ptr = tlist;
+\end_layout
+
+\begin_layout LyX-Code
+    long count = 0;
+\end_layout
+
+\begin_layout LyX-Code
+    while(ptr != NULL) {
+\end_layout
+
+\begin_layout LyX-Code
+        count = count + 1;
+\end_layout
+
+\begin_layout LyX-Code
+        ptr = ptr->next;
+\end_layout
+
+\begin_layout LyX-Code
+    }
+\end_layout
+
+\begin_layout LyX-Code
+    return count; 
+\end_layout
+
+\begin_layout LyX-Code
+}
+\end_layout
+
+\begin_layout LyX-Code
+   	
+\end_layout
+
+\begin_layout LyX-Code
+struct List* concat(struct List* l1, struct List* l2) {
+\end_layout
+
+\begin_layout LyX-Code
+    long x = length(l1);
+\end_layout
+
+\begin_layout LyX-Code
+    long y = length(l2);
+\end_layout
+
+\begin_layout LyX-Code
+    if (x >0 && y > 0) {
+\end_layout
+
+\begin_layout LyX-Code
+        end_of_list(l1)->next = l2;
+\end_layout
+
+\begin_layout LyX-Code
+    }
+\end_layout
+
+\begin_layout LyX-Code
+    if(x == 0) {
+\end_layout
+
+\begin_layout LyX-Code
+        return l2;
+\end_layout
+
+\begin_layout LyX-Code
+    }
+\end_layout
+
+\begin_layout LyX-Code
+    return l1;
+\end_layout
+
+\begin_layout LyX-Code
+}
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+List Structure and Methods in C
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:c-list"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:Future-Enhancements"
+
+\end_inset
+
+Future Enhancements
+\end_layout
+
+\begin_layout Standard
+Some recommendations for potential future enhancements of the CPCG are
+\end_layout
+
+\begin_layout Itemize
+Expand the DSL to increase the project's scope and abstract more concepts,
+ accommodating a wider array of programs to generate.
+ 
+\end_layout
+
+\begin_layout Itemize
+Alter the format of the DSL as needed to make it more user-friendly and
+ human-readable; the DSL appears to become less comprehensive as more advanced
+ concepts are added.
+ 
+\end_layout
+
+\begin_layout Itemize
+Add or remove concepts from the DSL as more programming languages are added
+ to the code generator since shared concepts in the existing languages may
+ not necessarily share these same concepts with the new languages.
+ 
+\end_layout
+
+\begin_layout Itemize
+Add new choices to the design language to allow for more varied code generation.
+\end_layout
+
+\begin_layout Itemize
+Modify CPCG source code to generate ideal solutions rather than just compilable,
+ working code.
+\end_layout
+
+\begin_layout Chapter
+\begin_inset CommandInset label
+LatexCommand label
+name "chap:Design-Language"
+
+\end_inset
+
+Design Language
+\end_layout
+
+\begin_layout Standard
+The design language (displayed in full in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Design-Language-Module"
+
+\end_inset
+
+) is used to supplement the other modules by defining possible choices that
+ users may provide to the CPCG tool; these choices affect the subsequent
+ generated code.
+ For example, the partition function used in the quicksort algorithm has
+ different requirements based on the design decisions of the user, such
+ as using array versus list data structures or using in-place sorting versus
+ copying.
+ 
+\end_layout
+
+\begin_layout Standard
+The types of choices available to users are divided into six categories:
+\end_layout
+
+\begin_layout Enumerate
+Pivot: Select the head (start) or last (end) element of the chosen data
+ structure.
+ The middle element may only be used in the array data structure.
+\end_layout
+
+\begin_layout Enumerate
+Structure: Select the data structure to be examined.
+ None is used if no data structure is present in the algorithm, such as
+ in the 
+\begin_inset Quotes eld
+\end_inset
+
+Hello World
+\begin_inset Quotes erd
+\end_inset
+
+ implementation; the other available choices are list and array.
+\end_layout
+
+\begin_layout Enumerate
+Loop: Select recursion or iteration as the form of repetition in the algorithm.
+\end_layout
+
+\begin_layout Enumerate
+Libraries: If available within the language libraries, select built-in partition
+ or concatenation functions rather than using the CPCG to generate its own.
+\end_layout
+
+\begin_layout Enumerate
+Language: There are currently nine languages to select from in the CPCG
+ --- Haskell, Java, Lua,
+\begin_inset Formula $\lambda$
+\end_inset
+
+Prolog, Lisp, C, Scala, Prolog, and C#.
+\end_layout
+
+\begin_layout Enumerate
+Paradigm: Scala is the only language that needs a specific paradigm chosen.
+ For the other languages, the choice of paradigm is implicit in the CPCG.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout LyX-Code
+type Library = String
+\end_layout
+
+\begin_layout LyX-Code
+   	
+\end_layout
+
+\begin_layout LyX-Code
+data Choices = Piv Pivot 
+\end_layout
+
+\begin_layout LyX-Code
+             | Str Structure 
+\end_layout
+
+\begin_layout LyX-Code
+             | Loop Loop 
+\end_layout
+
+\begin_layout LyX-Code
+             | Lib Libraries 
+\end_layout
+
+\begin_layout LyX-Code
+             | Lang Language
+\end_layout
+
+\begin_layout LyX-Code
+             | Para Paradigm
+\end_layout
+
+\begin_layout LyX-Code
+  deriving Eq
+\end_layout
+
+\begin_layout LyX-Code
+   	
+\end_layout
+
+\begin_layout LyX-Code
+data Pivot = Head | Mid | Last 
+\end_layout
+
+\begin_layout LyX-Code
+  deriving Eq
+\end_layout
+
+\begin_layout LyX-Code
+   	
+\end_layout
+
+\begin_layout LyX-Code
+data Structure = None | List | Array 
+\end_layout
+
+\begin_layout LyX-Code
+  deriving Eq
+\end_layout
+
+\begin_layout LyX-Code
+   	
+\end_layout
+
+\begin_layout LyX-Code
+data Loop = Rec | Iter 
+\end_layout
+
+\begin_layout LyX-Code
+  deriving Eq
+\end_layout
+
+\begin_layout LyX-Code
+   	
+\end_layout
+
+\begin_layout LyX-Code
+data Libraries = Part | Concat 
+\end_layout
+
+\begin_layout LyX-Code
+  deriving Eq
+\end_layout
+
+\begin_layout LyX-Code
+   	
+\end_layout
+
+\begin_layout LyX-Code
+data Language = Haskell 
+\end_layout
+
+\begin_layout LyX-Code
+              | Java 
+\end_layout
+
+\begin_layout LyX-Code
+              | C 
+\end_layout
+
+\begin_layout LyX-Code
+              | LP 
+\end_layout
+
+\begin_layout LyX-Code
+              | Prolog 
+\end_layout
+
+\begin_layout LyX-Code
+              | CSharp 
+\end_layout
+
+\begin_layout LyX-Code
+              | Scala 
+\end_layout
+
+\begin_layout LyX-Code
+              | Lua 
+\end_layout
+
+\begin_layout LyX-Code
+              | Lisp 
+\end_layout
+
+\begin_layout LyX-Code
+  deriving Eq
+\end_layout
+
+\begin_layout LyX-Code
+   	
+\end_layout
+
+\begin_layout LyX-Code
+data Paradigm = Func | Log | OO | Imp 
+\end_layout
+
+\begin_layout LyX-Code
+  deriving Eq 
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Design Language
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Design-Language-Module"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+When exploring any algorithm, the user is responsible for selecting enough
+ applicable design choices to generate the desired output; unnecessary or
+ invalid choices are ignored or errors are produced.
+ Again using quicksort as an example --- this algorithm should be given
+ design input for pivot, structure, loop, and language at the base level.
+ Library choices are optional and, generally, so is the choice of paradigm
+ (except for Scala which must be specified as OO or functional to ensure
+ the correct intermediary module is used).
+ On the other hand, for examples such as Fibonacci and factorial, pivot,
+ structure, and libraries, are not relevant design choices.
+\end_layout
+
+\begin_layout Standard
+The design language is developed in such a way that it is relatively easy
+ for programmers to add new design choices (as mentioned in Section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:Future-Enhancements"
+
+\end_inset
+
+), either to the existing categories or by creating new categories entirely.
+\end_layout
+
+\begin_layout Chapter
+\begin_inset CommandInset label
+LatexCommand label
+name "chap:Implementation"
+
+\end_inset
+
+Development and Implementation Details
+\end_layout
+
+\begin_layout Section
+Problems and Changes
+\end_layout
+
+\begin_layout Standard
+Creating the initial DSL was by no means an easy feat, nor was translating
+ the algorithms for standard programs from the internal DSL to intermediate
+ representations, then to source code in multiple languages.
+ Many of these languages were not familiar to the developer before this
+ project, including the DSL's host language, Haskell.
+ More often than not, the differences between the languages overshadowed
+ the similarities, making it difficult to identify and abstract the needed
+ concepts.
+ 
+\end_layout
+
+\begin_layout Standard
+After creating skeletal versions of the ASTs, it was easier and more efficient
+ to start development with simpler algorithms and examples than quicksort,
+ particularly ones that are intuitively similar in each of the four languages
+ (semantically and syntactically) to get the code up and running, then backtrack
+ and adapt the older code to the changes.
+ In this situation, the design choices were initially, but temporarily,
+ ignored to be able to grasp the more basic concepts of the project and
+ what the ultimate goal is.
+ As the project developed, more algorithms and languages were added, strengtheni
+ng the theory that the syntax and, in some ways, semantics of each language
+ are not very relevant.
+ 
+\end_layout
+
+\begin_layout Standard
+Eventually, the concept of design choices was added back into the project.
+ This addition, of course, presented its own set of difficulties.
+ What is the best way to represent the design choices? At what level (i.e.,
+ program, function, expression, etc.) do the design choices need to be considered
+? How do the design choices affect the final generated source code? Ultimately,
+ the design choices were added to the project via the design AST, the structures
+ and types of which were later integrated into the existing paradigm modules.
+ 
+\end_layout
+
+\begin_layout Standard
+Adding design choices to the project did not influence the pretty printers
+ as the design is reasonably assumed to modify the code at the design/semantic
+ level (i.e., in the 
+\begin_inset Quotes eld
+\end_inset
+
+To
+\begin_inset Quotes erd
+\end_inset
+
+ modules) rather than the syntactic level of code generation.
+ One observation was made regarding the design choice for looping via iteration
+ or recursion: any variables that are modified within the iterative loop
+ need to be passed as parameters for the recursive version of the function.
+ 
+\end_layout
+
+\begin_layout Standard
+The reader should note that it is not necessarily possible to integrate
+ the design choices into every language due to the time constraints, scope
+ of the project, and/or nature of the algorithm (e.g., there are no pivot
+ choices in the exponent algorithm).
+ However, there are a fair amount of design choices and example algorithms
+ to demonstrate if and how design choices affect code generation.
+\end_layout
+
+\begin_layout Standard
+Over time, both the project and the experience of the developer progressed.
+ As the DSLs became more expressive and complete in the sense that they
+ involved more or less features as required, it became less difficult to
+ abstract the concepts or accommodate the design choices and obtain the
+ intended output.
+ 
+\end_layout
+
+\begin_layout Chapter
+\begin_inset CommandInset label
+LatexCommand label
+name "chap:Testing"
+
+\end_inset
+
+Testing
+\end_layout
+
+\begin_layout Standard
+Testing the CPCG was an ongoing and sometimes tedious task.
+ With every new language, algorithm, and design change added, new modules
+ needed to be designed, developed, and tested to ensure compatibility with
+ the existing modules; not to mention the modification of previous files.
+ If modules from earlier stages of the code generation process were updated,
+ especially the internal AST type, all subsequent modules then had to be
+ modified and tested as well to accommodate the changes.
+ For example, the IfExpr and Conditional data structures were modified in
+ the internal AST type to a single IfExpr structure (Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Expr-Modifications-in"
+
+\end_inset
+
+).
+ Similarly, ConcatExpr was modified to represent the difference between
+ concatenating an element to a list and concatenating two lists (Figure
+ 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Concatenation-Modifications-in"
+
+\end_inset
+
+), both of which are needed for the immutable list version of quicksort.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout LyX-Code
+-- Before making changes
+\end_layout
+
+\begin_layout LyX-Code
+data Expr = IfExpr Conditional   
+\end_layout
+
+\begin_layout LyX-Code
+data Conditional = If Expr Expr Expr 
+\end_layout
+
+\begin_layout LyX-Code
+   	
+\end_layout
+
+\begin_layout LyX-Code
+-- After Making Changes
+\end_layout
+
+\begin_layout LyX-Code
+data Expr = IfExpr Expr [Expr] [Expr]
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+IfExpr Modifications in Internal AST Type
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Expr-Modifications-in"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout LyX-Code
+data Expr = ConcatExpr Concatenation
+\end_layout
+
+\begin_layout LyX-Code
+   	
+\end_layout
+
+\begin_layout LyX-Code
+-- Before Making Changes
+\end_layout
+
+\begin_layout LyX-Code
+data Concatenation = Concat2 Node Node
+\end_layout
+
+\begin_layout LyX-Code
+                   | Concat3 Node Node Node
+\end_layout
+
+\begin_layout LyX-Code
+   	
+\end_layout
+
+\begin_layout LyX-Code
+-- After Making Changes
+\end_layout
+
+\begin_layout LyX-Code
+data Concatenation = List Node Expr --element with list
+\end_layout
+
+\begin_layout LyX-Code
+                   | Concat Expr Expr --two lists
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Concatenation Modifications in Internal AST Type
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Concatenation-Modifications-in"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+These two updates took place in the internal AST type, the root module for
+ all code generation in the CPCG.
+ As such, more changes were required to be made to the algorithm implementations
+ and paradigm modules, then all the modules were tested using the methods
+ discussed in the next sections.
+\end_layout
+
+\begin_layout Section
+The Box Approach
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+Rather than providing information about the steps used to test software,
+ the Box Approach describes the perspective the programmer adopts during
+ the testing phases.
+ This method is divided into two categories: black-box testing and white-box
+ testing.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Black-Box Testing
+\begin_inset CommandInset label
+LatexCommand label
+name "sub:Black-Box-Testing"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+Black-box testing examines the functionality of software without considering
+ its internal implementation.
+ The tester, therefore, is only intended to be aware of what the software
+ is functionally designed to do, rather than 
+\begin_inset Quotes eld
+\end_inset
+
+how
+\begin_inset Quotes erd
+\end_inset
+
+ to do it 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "patton:2005"
+
+\end_inset
+
+, so a technological background is not necessarily required.
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Black-box test cases were designed based around the requirements and specificati
+ons of the software project and applied to virtually every level of testing
+ (as described in more detail in Section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:Level-Testing"
+
+\end_inset
+
+).
+ This type of testing was used frequently during and after the development
+ of the CPCG, especially in situations where changes were made to existing
+ modules.
+ For example, code is generated based on a language choice, design choices,
+ and algorithm choice.
+ If the printed implementation matched the expected printed output code,
+ the test passed; otherwise, the test failed and notes were made to prepare
+ for white-box testing (Section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sub:White-Box-Testing"
+
+\end_inset
+
+) to determine what the problem was.
+ 
+\end_layout
+
+\begin_layout Standard
+As the project progressed, the design changed to better suit the software
+ requirements and simplify the code by removing redundancies.
+ Entire blocks of code were constantly being modified and moved within or
+ across the Haskell modules, making black-box testing a simple method to
+ use to ensure the input parameters are accepted as expected (such as values
+ and types since Haskell is a strongly-typed programming language) and the
+ desired results were still produced.
+\end_layout
+
+\begin_layout Subsection
+White-Box Testing
+\begin_inset CommandInset label
+LatexCommand label
+name "sub:White-Box-Testing"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+White-box testing (also known as clear box testing, glass box testing, transpare
+nt box testing, and structural testing) is essentially the opposite of black-box
+ing testing in that the tester explores the internal structures and workings
+ of an application.
+ An internal perspective of the program as well as development skills are
+ used to build test cases 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "patton:2005"
+
+\end_inset
+
+.
+ This method of testing is used to test paths within a unit, paths between
+ units, and paths between subsystems, making it inherently more difficult
+ to accomplish than black-box testing.
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+White-box testing was used regularly in conjunction with black-box testing
+ during the development and maintenance stages for the project.
+ Although white-box testing is applicable to every level of testing, it
+ was more commonly used at the unit level for the CPCG while black-box testing
+ (Section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sub:Black-Box-Testing"
+
+\end_inset
+
+) was used for higher-level testing.
+ 
+\end_layout
+
+\begin_layout Standard
+White-box testing was not only used to confirm that the project code works
+ as expected for every path, control flow, data flow, edge case, error case,
+ etc.; it was also used to remove data structures and functions that were
+ no longer being used.
+ As the project developed, new functionality was needed while older functionalit
+y became redundant or unnecessary, such as the previously mentioned if-else
+ and concatenation expression examples from the internal AST type (Figures
+ 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Expr-Modifications-in"
+
+\end_inset
+
+ and 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Concatenation-Modifications-in"
+
+\end_inset
+
+).
+\end_layout
+
+\begin_layout Section
+Level Testing
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:Level-Testing"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+According to the Software Engineering Body of Knowledge (SWEBOK), there
+ are three big test stages that conceptually distinguish level testing 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "ieee:2005"
+
+\end_inset
+
+:
+\end_layout
+
+\begin_layout Enumerate
+Unit Testing: Verifies the functioning of components in isolation of software
+ pieces which are separately testable; test cases were typically designed
+ at the class level (for OO design) or module level (logic and functional
+ design) by the developer to ensure the specific function performed as expected.
+ 
+\end_layout
+
+\begin_layout Enumerate
+Integration Testing: Verifies the interaction between software components
+ iteratively or all at once.
+ This iterative approach to integration testing was usually preferred in
+ the CPCG as it is easier and more efficient to identify which units were
+ causing the problems and fix them.
+ 
+\end_layout
+
+\begin_layout Enumerate
+System Testing: Verifies the behaviour of the whole system to ensure the
+ requirements and specifications are met and deals with edge and error cases.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+Testing the software at different levels and during different stages of
+ development promotes an increase of code quality as well as efficiency
+ of the overall programming and quality assurance (QA) process.
+ 
+\end_layout
+
+\end_inset
+
+The developer's approach to level testing adopted the bottom-up perspective
+ whereby the lowest level units were tested first (unit testing) before
+ integration and system testing took place, rather than the top-down point
+ of view to examine the system first before testing the software's integration
+ and individual units 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "ieee:2005"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Chapter
+\begin_inset CommandInset label
+LatexCommand label
+name "chap:Conclusions"
+
+\end_inset
+
+Conclusions
+\end_layout
+
+\begin_layout Standard
+The results of this project demonstrate common concepts and patterns of
+ the cross-paradigm languages examined and, by extension, other languages
+ within the four main paradigms as well.
+ Furthermore, the outputted languages are generated equally well from the
+ DSL.
+\end_layout
+
+\begin_layout Standard
+New languages may be added to the software project with little difficulty
+ based on the existing modules as languages within the same paradigm were
+ discovered to be very semantically similar, meaning the syntax has little
+ importance.
+\end_layout
+
+\begin_layout Standard
+Appealing and ambitious changes to the CPCG, such as adding more concepts
+ to the DSL to bring it closer to an ultimate goal of making it Turing complete,
+  make it more usable and efficient.
+\end_layout
+
+\begin_layout Standard
+This tool is sufficient to prove the existence of common concepts and patterns
+ across programming paradigms.
+ However, it is not likely to be used in non-academic environments as it
+ is hardly feasible to expand it so extensively for general use in industry.
+ 
+\end_layout
+
+\begin_layout Standard
+Knowledge and use of the CPCG familiarizes individuals with the similarities
+ in cross-paradigm languages, making it easier to apply this knowledge and
+ learn new programming languages more quickly and efficiently.
+ 
+\end_layout
+
+\begin_layout Standard
+Finally, with sufficient evidence, this project proves the existence of
+ abstract algorithms and a language of design that is actually tangible
+ and not just theoretical.
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset bibtex
+LatexCommand bibtex
+bibfiles "References_BiancaCurutan"
+options "bibtotoc,alpha"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Chapter
+\start_of_appendix
+\begin_inset CommandInset label
+LatexCommand label
+name "chap:Appendix"
+
+\end_inset
+
+High-level Module Descriptions 
+\end_layout
+
+\begin_layout Section
+ASTInternal
+\end_layout
+
+\begin_layout Standard
+AST to define the internal language.
+ Used in the implementation modules to express algorithms.
+\end_layout
+
+\begin_layout Section
+ASTDesign
+\end_layout
+
+\begin_layout Standard
+AST to define the design choices that users may input for generating code.
+\end_layout
+
+\begin_layout Section
+Main
+\end_layout
+
+\begin_layout Standard
+Provides the user interface to generate code with the parameters: file path,
+ algorithm name (must match expected/existing name), and design choices
+ from the design module.
+\end_layout
+
+\begin_layout Section
+Paradigm Modules
+\end_layout
+
+\begin_layout Subsection
+ASTFunctional
+\end_layout
+
+\begin_layout Standard
+AST to define the functional paradigm for writing code to be generated,
+ including modified versions of the internal language's data types and structure
+s as well as additional ones to abstract functional-only concepts.
+\end_layout
+
+\begin_layout Subsection
+ASTOO
+\end_layout
+
+\begin_layout Standard
+AST to define the OO paradigm for writing code to be generated, including
+ modified versions of the internal language's data types and structures
+ as well as additional ones to abstract OO-only concepts.
+ 
+\end_layout
+
+\begin_layout Subsection
+ASTC
+\end_layout
+
+\begin_layout Standard
+AST to define the imperative paradigm for writing code to be generated,
+ including modified versions of the internal language's data types and structure
+s as well as additional ones to abstract imperative-only concepts.
+\end_layout
+
+\begin_layout Subsection
+ASTLogic
+\end_layout
+
+\begin_layout Standard
+AST to define the logic paradigm for writing code to be generated, including
+ modified versions of the internal language's data types and structures
+ as well as additional ones to abstract logic-only concepts.
+\end_layout
+
+\begin_layout Section
+Intermediary 
+\begin_inset Quotes eld
+\end_inset
+
+To
+\begin_inset Quotes erd
+\end_inset
+
+ Modules
+\end_layout
+
+\begin_layout Subsection
+ToFunctional
+\end_layout
+
+\begin_layout Standard
+Module to map DSL concepts from ASTInternal to functional concepts from
+ ASTFunctional and start resembling functional code design.
+\end_layout
+
+\begin_layout Subsection
+ToOO
+\end_layout
+
+\begin_layout Standard
+Module to map DSL concepts from ASTInternal to OO concepts from ASTOO and
+ start resembling OO code design.
+\end_layout
+
+\begin_layout Subsection
+ToImperative
+\end_layout
+
+\begin_layout Standard
+Module to map DSL concepts from ASTInternal to imperative concepts from
+ ASTImperative and start resembling imperative code design.
+\end_layout
+
+\begin_layout Subsection
+ToLogic
+\end_layout
+
+\begin_layout Standard
+Module to map DSL concepts from ASTInternal to logic concepts from ASTLogic
+ and start resembling logic code design.
+\end_layout
+
+\begin_layout Section
+Pretty Printer Modules
+\end_layout
+
+\begin_layout Subsection
+Helpers
+\end_layout
+
+\begin_layout Standard
+Provides helper functions for frequently used printer syntax, such as pipe
+ 
+\begin_inset Quotes eld
+\end_inset
+
+|
+\begin_inset Quotes erd
+\end_inset
+
+ and dblslash 
+\begin_inset Quotes eld
+\end_inset
+
+//
+\begin_inset Quotes erd
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsection
+Primary Languages
+\end_layout
+
+\begin_layout Subsubsection
+PrintHaskell
+\end_layout
+
+\begin_layout Standard
+Maps 
+\begin_inset Quotes eld
+\end_inset
+
+almost
+\begin_inset Quotes erd
+\end_inset
+
+ functional code from ToFunctional to the proper syntax and generates compilable
+, working source code in Haskell.
+\end_layout
+
+\begin_layout Subsubsection
+PrintJava
+\end_layout
+
+\begin_layout Standard
+Maps 
+\begin_inset Quotes eld
+\end_inset
+
+almost
+\begin_inset Quotes erd
+\end_inset
+
+ OO code from ToOO to the proper syntax and generates compilable, working
+ source code in Java.
+\end_layout
+
+\begin_layout Subsubsection
+PrintLua
+\end_layout
+
+\begin_layout Standard
+Maps 
+\begin_inset Quotes eld
+\end_inset
+
+almost
+\begin_inset Quotes erd
+\end_inset
+
+ imperative code from ToImperative to the proper syntax and generates compilable
+, working source code in Lua.
+\end_layout
+
+\begin_layout Subsubsection*
+PrintLambdaProlog
+\end_layout
+
+\begin_layout Standard
+Maps 
+\begin_inset Quotes eld
+\end_inset
+
+almost
+\begin_inset Quotes erd
+\end_inset
+
+ logic code from ToLogic to the proper syntax and generates compilable,
+ working source code in 
+\begin_inset Formula $\lambda$
+\end_inset
+
+Prolog.
+\end_layout
+
+\begin_layout Subsection
+Secondary Languages
+\end_layout
+
+\begin_layout Subsubsection
+
+\series bold
+PrintCSharp
+\end_layout
+
+\begin_layout Standard
+Maps 
+\begin_inset Quotes eld
+\end_inset
+
+almost
+\begin_inset Quotes erd
+\end_inset
+
+ OO code from ToOO to the proper syntax and generates compilable, working
+ source code in C#.
+\end_layout
+
+\begin_layout Subsubsection
+PrintLisp
+\end_layout
+
+\begin_layout Standard
+Maps 
+\begin_inset Quotes eld
+\end_inset
+
+almost
+\begin_inset Quotes erd
+\end_inset
+
+ functional code from ToFunctional to the proper syntax and generates compilable
+, working source code in Lisp.
+ PrintLisp is not currently able to generate source code for the quicksort
+ algorithm.
+\end_layout
+
+\begin_layout Subsubsection
+PrintC
+\end_layout
+
+\begin_layout Standard
+Maps 
+\begin_inset Quotes eld
+\end_inset
+
+almost
+\begin_inset Quotes erd
+\end_inset
+
+ imperative code from ToImperative to the proper syntax and generates compilable
+, working source code in C.
+\end_layout
+
+\begin_layout Subsubsection
+PrintScala
+\end_layout
+
+\begin_layout Standard
+Maps 
+\begin_inset Quotes eld
+\end_inset
+
+almost
+\begin_inset Quotes erd
+\end_inset
+
+ OO code from ToOO to the proper syntax and generates compilable, working
+ source code in Scala; also has the capability to map 
+\begin_inset Quotes eld
+\end_inset
+
+almost
+\begin_inset Quotes erd
+\end_inset
+
+ functional
+\begin_inset Quotes erd
+\end_inset
+
+ code from ToFunctional to the proper syntax and generate compilable, working
+ source code in Scala.
+\end_layout
+
+\begin_layout Section
+Implementation Modules
+\end_layout
+
+\begin_layout Subsection
+Quicksort Algorithms
+\end_layout
+
+\begin_layout Subsubsection
+Quicksort
+\end_layout
+
+\begin_layout Standard
+Implementation of the Quicksort algorithm written in the DSL from ASTInternal.
+\end_layout
+
+\begin_layout Subsubsection
+QuicksortHelpers
+\end_layout
+
+\begin_layout Standard
+Implementation of helper functions (used in the Quicksort algorithm) written
+ in the DSL from ASTInternal.
+\end_layout
+
+\begin_layout Subsection
+Iterative Algorithms
+\end_layout
+
+\begin_layout Subsubsection
+Fibonacci
+\end_layout
+
+\begin_layout Standard
+Implementation of the Fibonacci algorithm written in the DSL from ASTInternal.
+\end_layout
+
+\begin_layout Subsubsection
+Factorial
+\end_layout
+
+\begin_layout Standard
+Implementation of the Factorial algorithm written in the DSL from ASTInternal.
+\end_layout
+
+\begin_layout Subsubsection
+Exponent
+\end_layout
+
+\begin_layout Standard
+Implementation of the Exponent algorithm written in the DSL from ASTInternal.
+\end_layout
+
+\begin_layout Subsubsection
+GCD LCM
+\end_layout
+
+\begin_layout Standard
+Implementations of the greatest common divisor (GCD) and least common multiple
+ (LCM) algorithms written in the DSL from ASTInternal.
+\end_layout
+
+\begin_layout Subsection
+Other Algorithms
+\end_layout
+
+\begin_layout Subsubsection
+Palindrome
+\end_layout
+
+\begin_layout Standard
+Implementation of the Palindrome algorithm written in the DSL from ASTInternal.
+\end_layout
+
+\begin_layout Subsubsection
+Maximum
+\end_layout
+
+\begin_layout Standard
+Implementation of the Maximum algorithm written in the DSL from ASTInternal
+ to find the maximum of two numbers.
+\end_layout
+
+\begin_layout Subsubsection
+Hello
+\end_layout
+
+\begin_layout Standard
+Implementation of the Hello algorithm written in the DSL from ASTInternal
+ to print 
+\begin_inset Quotes eld
+\end_inset
+
+Hello World!
+\begin_inset Quotes erd
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Chapter
+\begin_inset CommandInset label
+LatexCommand label
+name "chap:AppendixB"
+
+\end_inset
+
+Generated Quicksort Solutions
+\end_layout
+
+\begin_layout Section
+Haskell (Functional)
+\end_layout
+
+\begin_layout Standard
+The generated quicksort solution in Haskell is shown in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:qsHaskell"
+
+\end_inset
+
+ and the ideal solution in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "example:quicksort-Haskell"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout LyX-Code
+module QuicksortProg where
+\end_layout
+
+\begin_layout LyX-Code
+quicksort items len = 
+\end_layout
+
+\begin_layout LyX-Code
+    if ((<) len 1
+\end_layout
+
+\begin_layout LyX-Code
+        then do
+\end_layout
+
+\begin_layout LyX-Code
+            items
+\end_layout
+
+\begin_layout LyX-Code
+        else do
+\end_layout
+
+\begin_layout LyX-Code
+            quicksortRec items 0 ((-) len 1)
+\end_layout
+
+\begin_layout LyX-Code
+quicksortRec items leftIndex rightIndex =
+\end_layout
+
+\begin_layout LyX-Code
+    if (>=) leftIndex rightIndex
+\end_layout
+
+\begin_layout LyX-Code
+        then do 
+\end_layout
+
+\begin_layout LyX-Code
+            items
+\end_layout
+
+\begin_layout LyX-Code
+        else do
+\end_layout
+
+\begin_layout LyX-Code
+            let pivot = (head items) in do
+\end_layout
+
+\begin_layout LyX-Code
+                let (less,rest) = partition (< pivot) 
+\end_layout
+
+\begin_layout LyX-Code
+                (tail items) in do
+\end_layout
+
+\begin_layout LyX-Code
+                    quicksortRec less 0 ((-1) (length less) 1) 
+\end_layout
+
+\begin_layout LyX-Code
+                    ++ (pivot:quicksortRec rest 0 
+\end_layout
+
+\begin_layout LyX-Code
+                    ((-) (length rest) 1))
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Generated Quicksort Solution in Haskell
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:qsHaskell"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+\begin_inset Formula $\lambda$
+\end_inset
+
+Prolog (Logic)
+\end_layout
+
+\begin_layout Standard
+The generated quicksort solution in 
+\begin_inset Formula $\lambda$
+\end_inset
+
+Prolog is shown in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:qsLP"
+
+\end_inset
+
+ and the ideal solution in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "example:quicksort-LP"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout LyX-Code
+quicksort(Items,Len,Squicksort) :-
+\end_layout
+
+\begin_layout LyX-Code
+    Len < 1-> Squicksort = Items;
+\end_layout
+
+\begin_layout LyX-Code
+    quicksortRec(Items,0,Len-1,Squicksort).
+\end_layout
+
+\begin_layout LyX-Code
+quicksortRec(Items,LeftIndex,RightIndex,SquicksortRec) :-
+\end_layout
+
+\begin_layout LyX-Code
+    LeftIndex >= RightIndex->SquicksortRec = Items;
+\end_layout
+
+\begin_layout LyX-Code
+    [Head|Tail] = Items,Pivot is Head,
+\end_layout
+
+\begin_layout LyX-Code
+    partition(>(Pivot),Tail,Less,Rest),
+\end_layout
+
+\begin_layout LyX-Code
+    length(Less,LenLess),
+\end_layout
+
+\begin_layout LyX-Code
+    quicksortRec(Less,0,LenLess - 1,SLess),
+\end_layout
+
+\begin_layout LyX-Code
+    length(Rest,LenRest),
+\end_layout
+
+\begin_layout LyX-Code
+    quicksortRec(Rest,0,LenRest - 1,SRest),
+\end_layout
+
+\begin_layout LyX-Code
+    append(SLess,[Pivot|SRest],SquicksortRec).
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Generated Quicksort Solution in 
+\begin_inset Formula $\lambda$
+\end_inset
+
+Prolog
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:qsLP"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Java (OO)
+\end_layout
+
+\begin_layout Standard
+The generated quicksort solution in Java is shown in Figures 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:qsJava"
+
+\end_inset
+
+ and 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:qsJava-1"
+
+\end_inset
+
+ and the ideal solution in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "example:quicksort-Java"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout LyX-Code
+public class QuicksortProg {     
+\end_layout
+
+\begin_layout LyX-Code
+    public Integer[] quicksort(Integer[] items,int len) {         
+\end_layout
+
+\begin_layout LyX-Code
+        if (len < 1) {             
+\end_layout
+
+\begin_layout LyX-Code
+            return items;         
+\end_layout
+
+\begin_layout LyX-Code
+        }         
+\end_layout
+
+\begin_layout LyX-Code
+        else {             
+\end_layout
+
+\begin_layout LyX-Code
+            return quicksortRec(items,0,len-1);         
+\end_layout
+
+\begin_layout LyX-Code
+        }     
+\end_layout
+
+\begin_layout LyX-Code
+    }     
+\end_layout
+
+\begin_layout LyX-Code
+    private Integer[] quicksortRec(Integer[] items,
+\end_layout
+
+\begin_layout LyX-Code
+    int leftIndex,int rightIndex) {         
+\end_layout
+
+\begin_layout LyX-Code
+        if (leftIndex >= rightIndex) {             
+\end_layout
+
+\begin_layout LyX-Code
+            return items;         
+\end_layout
+
+\begin_layout LyX-Code
+        }         
+\end_layout
+
+\begin_layout LyX-Code
+        else {             
+\end_layout
+
+\begin_layout LyX-Code
+            int[] pivot = rightIndex;             
+\end_layout
+
+\begin_layout LyX-Code
+            pivot = partition(pivot,items,leftIndex,rightIndex);       
+      
+\end_layout
+
+\begin_layout LyX-Code
+            quicksortRec(items,leftIndex,pivot-1);             
+\end_layout
+
+\begin_layout LyX-Code
+            quicksortRec(items,pivot+1,rightIndex);             
+\end_layout
+
+\begin_layout LyX-Code
+            return items;         
+\end_layout
+
+\begin_layout LyX-Code
+        }     
+\end_layout
+
+\begin_layout LyX-Code
+    }     
+\end_layout
+
+\begin_layout LyX-Code
+    private void partition(int pivotIndex,Integer[] items,
+\end_layout
+
+\begin_layout LyX-Code
+    Integer leftIndex,Integer rightIndex) {         
+\end_layout
+
+\begin_layout LyX-Code
+        int pivotValue = items[pivotIndex];         
+\end_layout
+
+\begin_layout LyX-Code
+        swap(items,pivotIndex,rightIndex);         
+\end_layout
+
+\begin_layout LyX-Code
+        int swapIndex = partitionIter(leftIndex,leftIndex,
+\end_layout
+
+\begin_layout LyX-Code
+        rightIndex,items,pivotValue);         
+\end_layout
+
+\begin_layout LyX-Code
+        swap(items,swapIndex,rightIndex);         
+\end_layout
+
+\begin_layout LyX-Code
+        return swapIndex;     
+\end_layout
+
+\begin_layout LyX-Code
+    }  
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Generated Quicksort Solution in Java (Part I)
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:qsJava"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout LyX-Code
+private int partitionIter(int swapIndex,int i,
+\end_layout
+
+\begin_layout LyX-Code
+int rightIndex,Integer[] items,int pivotValue) {         
+\end_layout
+
+\begin_layout LyX-Code
+        while (i < rightIndex) {             
+\end_layout
+
+\begin_layout LyX-Code
+            int iVal = items[i];             
+\end_layout
+
+\begin_layout LyX-Code
+            if (iVal < pivotValue) {                 
+\end_layout
+
+\begin_layout LyX-Code
+                swap(items,i,swapIndex);                 
+\end_layout
+
+\begin_layout LyX-Code
+                swapIndex = swapIndex+1;                 
+\end_layout
+
+\begin_layout LyX-Code
+                i = i+1;             
+\end_layout
+
+\begin_layout LyX-Code
+            }             
+\end_layout
+
+\begin_layout LyX-Code
+            else {                 
+\end_layout
+
+\begin_layout LyX-Code
+                i = i+1;             
+\end_layout
+
+\begin_layout LyX-Code
+            }         
+\end_layout
+
+\begin_layout LyX-Code
+        }         
+\end_layout
+
+\begin_layout LyX-Code
+        return swapIndex;     
+\end_layout
+
+\begin_layout LyX-Code
+    }     
+\end_layout
+
+\begin_layout LyX-Code
+    private void swap(Integer[] items,int i,int j) {         
+\end_layout
+
+\begin_layout LyX-Code
+        int iVal = items[i];         
+\end_layout
+
+\begin_layout LyX-Code
+        int jVal = items[j];         
+\end_layout
+
+\begin_layout LyX-Code
+        items[i] = jVal;         
+\end_layout
+
+\begin_layout LyX-Code
+        items[j] = iVal;     
+\end_layout
+
+\begin_layout LyX-Code
+    } 
+\end_layout
+
+\begin_layout LyX-Code
+} 
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Generated Quicksort Solution in Java (Part II)
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:qsJava-1"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Lua (Imperative)
+\end_layout
+
+\begin_layout Standard
+The generated quicksort solution in Lua is shown in Figures 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:qsLua"
+
+\end_inset
+
+ and 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:qsLua-1"
+
+\end_inset
+
+ and the ideal solution in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "example:quicksort-C"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout LyX-Code
+function quicksort(items,len)     
+\end_layout
+
+\begin_layout LyX-Code
+    if (len < 1) then         
+\end_layout
+
+\begin_layout LyX-Code
+        return items     
+\end_layout
+
+\begin_layout LyX-Code
+    else         
+\end_layout
+
+\begin_layout LyX-Code
+        return quicksortRec(items,1,len)     
+\end_layout
+
+\begin_layout LyX-Code
+    end 
+\end_layout
+
+\begin_layout LyX-Code
+end 
+\end_layout
+
+\begin_layout LyX-Code
+function quicksortRec(items,leftIndex,rightIndex)
+\end_layout
+
+\begin_layout LyX-Code
+    if (leftIndex >= rightIndex) then    
+\end_layout
+
+\begin_layout LyX-Code
+        return items     
+\end_layout
+
+\begin_layout LyX-Code
+    else         
+\end_layout
+
+\begin_layout LyX-Code
+        local pivot = rightIndex         
+\end_layout
+
+\begin_layout LyX-Code
+        pivot = partition(pivot,items,leftIndex,rightIndex")         
+\end_layout
+
+\begin_layout LyX-Code
+        quicksortRec(items,leftIndex,pivot - 1)
+\end_layout
+
+\begin_layout LyX-Code
+        quicksortRec(items,pivot + 1,rightIndex)
+\end_layout
+
+\begin_layout LyX-Code
+        return items
+\end_layout
+
+\begin_layout LyX-Code
+    end
+\end_layout
+
+\begin_layout LyX-Code
+end function partition(pivotIndex,items,leftIndex,rightIndex)
+\end_layout
+
+\begin_layout LyX-Code
+    local pivotValue = items[pivotIndex]
+\end_layout
+
+\begin_layout LyX-Code
+    swap(items,pivotIndex,rightIndex)
+\end_layout
+
+\begin_layout LyX-Code
+    local swapIndex = partitionIter(leftIndex,leftIndex,
+\end_layout
+
+\begin_layout LyX-Code
+    rightIndex,items,pivotValue)     
+\end_layout
+
+\begin_layout LyX-Code
+    swap(items,swapIndex,rightIndex)
+\end_layout
+
+\begin_layout LyX-Code
+    return swapIndex
+\end_layout
+
+\begin_layout LyX-Code
+end
+\end_layout
+
+\begin_layout LyX-Code
+function partitionIter(swapIndex,i,rightIndex,items,pivotValue)
+\end_layout
+
+\begin_layout LyX-Code
+    while (i < rightIndex) do
+\end_layout
+
+\begin_layout LyX-Code
+        local iVal = items[i]
+\end_layout
+
+\begin_layout LyX-Code
+        if (iVal < pivotValue) then
+\end_layout
+
+\begin_layout LyX-Code
+            swap(items,i,swapIndex)
+\end_layout
+
+\begin_layout LyX-Code
+            swapIndex = swapIndex + 1
+\end_layout
+
+\begin_layout LyX-Code
+            i = i + 1
+\end_layout
+
+\begin_layout LyX-Code
+        else
+\end_layout
+
+\begin_layout LyX-Code
+            i = i + 1
+\end_layout
+
+\begin_layout LyX-Code
+        end
+\end_layout
+
+\begin_layout LyX-Code
+    end
+\end_layout
+
+\begin_layout LyX-Code
+    return swapIndex
+\end_layout
+
+\begin_layout LyX-Code
+end
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Generated Quicksort Solution in Lua (Part I) 
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:qsLua"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout LyX-Code
+function swap(items,i,j)
+\end_layout
+
+\begin_layout LyX-Code
+    local iVal = items[i]
+\end_layout
+
+\begin_layout LyX-Code
+    local jVal = items[j]
+\end_layout
+
+\begin_layout LyX-Code
+    items[i] = jVal
+\end_layout
+
+\begin_layout LyX-Code
+    items[j] = iVal
+\end_layout
+
+\begin_layout LyX-Code
+end 
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Generated Quicksort Solution in Lua (Part II) 
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:qsLua-1"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document

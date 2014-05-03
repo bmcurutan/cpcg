@@ -1,0 +1,196 @@
+using System;
+using System.Collections.Generic;
+
+class QuicksortProg {    
+  /*public static int[] Quicksort(int[] items, int len) {
+    if (len < 1) {
+      return items;
+    }
+    else {
+      return QuicksortRec(items, 0, len-1);
+    }
+  }
+  
+  private static int[] QuicksortRec(int[] items, int leftIndex, int rightIndex) {
+    if (leftIndex >= rightIndex) {
+      return items;
+    }
+    else {      
+      int pivot = leftIndex;  //choose first element as pivot
+      pivot = Partition(pivot, items, leftIndex, rightIndex);
+      QuicksortRec(items, leftIndex, pivot-1);
+      QuicksortRec(items, pivot+1, rightIndex); 
+      return items; 
+    }
+  }
+  
+  private static int Partition(int pivotIndex, int[] items, int leftIndex, int rightIndex) {
+    int pivotValue = items[pivotIndex];
+    Swap(items,pivotIndex,rightIndex);  // Move pivot to end
+    
+    //iterative
+     int swapIndex = PartitionIter(leftIndex, leftIndex, rightIndex, items, pivotValue);
+    
+    //recursive
+    //int swapIndex = PartitionRec(leftIndex, leftIndex, rightIndex, items, pivotValue);
+    
+    Swap(items,swapIndex,rightIndex);  // Move pivot to its final place
+    return swapIndex;
+  }
+  
+  private static int PartitionIter(int swapIndex, int i, int rightIndex, int[] items, int pivotValue) {
+    while (i < rightIndex) {
+      int iVal = items[i];
+      if (iVal < pivotValue) {
+        Swap(items,i,swapIndex);
+        swapIndex = swapIndex+1;
+        i=i+1;
+      }
+      else { 
+        i = i + 1; 
+      }
+    } 
+    return swapIndex;
+  }
+  
+  private static int PartitionRec(int swapIndex, int i, int rightIndex, int[] items, int pivotValue) {
+    if (i < rightIndex) {
+      int iVal = items[i];
+      if (iVal < pivotValue) {
+        Swap(items, i, swapIndex);
+        return PartitionRec(swapIndex+1, i+1, rightIndex, items, pivotValue);
+      }
+      else {
+        return PartitionRec(swapIndex, i+1, rightIndex, items, pivotValue);
+      }     
+    }
+    else {
+      return swapIndex;
+    }
+  }
+  
+  private static void Swap(int[] items, int i, int j) {
+    int iVal = items[i];
+    int jVal = items[j];
+    items[i] = jVal;
+    items[j] = iVal;
+  }*/
+  
+   static void Main() {   
+    // System.out.println(qs.recFac(4) + " " + qs.iterFac(4));
+    
+    /*int[] test1 = {2,5,0,4,1,-10,3,4};
+    
+    Console.WriteLine("Array:");
+    print(test1);
+    test1 = Quicksort(test1,test1.Length);
+    print(test1);*/
+    
+    /*---------------------------------*/
+    
+    List<int> test2 = new List<int>();
+    test2.Add(2);
+    test2.Add(5);
+    test2.Add(0);
+    test2.Add(4);
+    test2.Add(1); 
+    test2.Add(-10); 
+    test2.Add(3); 
+    test2.Add(4);
+    
+    Console.WriteLine("List<int>:");
+    PrintF(test2);
+    test2 = QuicksortF(test2, test2.Count);
+    Console.WriteLine();
+    PrintF(test2);
+  }
+  
+  public static void PrintF(List<int> l) {
+    if (l != null) {
+      foreach (int o in l) {
+        Console.Write(o + " ");
+      }
+    }
+  }
+  
+  /* ----- Quicksort Immutable List<int> ("Functional") ----- */ 
+  public static List<int> QuicksortF(List<int> items, int len) {
+    if (len < 1) {
+      return items;
+    }
+    
+    else {
+      return QsRec(items, 0, len-1);
+    }
+  } 
+  
+  public static List<int> QsRec(List<int> items, int leftIndex, int rightIndex) {
+    if (leftIndex >= rightIndex) {
+      return items;
+    }
+    else {
+      int pivot = items[0]; 
+      List<int> less = new List<int>();
+      List<int> rest = new List<int>();
+      items.RemoveAt(0);
+      Partition(less, rest, pivot, items);
+      
+      return Concat(QsRec(less,0,less.Count-1),ListConcat(pivot,QsRec(rest,0,rest.Count-1)));
+    }
+  }
+  
+  public static List<int> ListConcat(int nd, List<int> l) {
+    l.Insert(0,nd); //add nd to head of l
+    return l;
+  }
+  
+  public static List<int> Concat(List<int> l1, List<int> l2) {
+    if (l2.Count < 1) {
+      return l1;
+    }
+    else {
+      l1.Add(l2[0]);
+      l2.RemoveAt(0);
+      return Concat(l1,l2);
+    }   
+  }
+  
+  public static void Partition(List<int> less, List<int> rest, int pivot, List<int> items) {
+    //PartitionIter(less,rest,pivot,items);
+     PartitionRec(less,rest,pivot,items);
+  }
+  
+  private static void PartitionIter(List<int> less, List<int> rest, int pivot, List<int> items) {
+      while (items.Count >= 1) {
+        int x = items[0];
+        items.RemoveAt(0);
+        if (x < pivot) {
+          less = ListConcat(x,less);
+        //  rest = rest;
+        }
+        else {
+         // less = less;
+          rest = ListConcat(x,rest);
+        }
+      }
+    }
+    
+  private static void PartitionRec(List<int> less, List<int> rest, int pivot, List<int> items) {
+    if (items.Count >= 1) {
+      int x = items[0];
+      items.RemoveAt(0);
+      PartitionRec(less, rest, pivot, items);
+      if (x < pivot) {
+        less = ListConcat(x,less);
+       //rest = rest;
+      }
+      else {
+        //less = less;
+        rest = ListConcat(x,rest);
+      }
+    }
+  }
+  
+}
+
+

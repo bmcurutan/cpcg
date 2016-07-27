@@ -15,4 +15,18 @@ tangible language of design. The Cross-Paradigm Code Generator (CPCG) is designe
 
 ---
 
-## Getting Started
+## Getting Started (on Mac)
+
+1. Install [Haskell](https://www.haskell.org/platform/)
+2. Open a terminal and type `ghci` for the GHC Interpreter
+3. Change to the project directory with `:cd` command
+4. Load the modules using `:l Main`
+5. Use the examples provided (`ex1, ex2,...`) or call the `generate` function with new parameters
+
+### The `generate` Function
+`generate :: [Char] -> [Char] -> [D.Choices] -> IO ()`
+
+- The first parameter (string) specifies the folder path in which the source file will generate
+- The second parameter (string) specifies the algorithm to generate; currently, the only ones available are: quicksort, fibonacci, factorial, exponent, palindrome, greatest common divisor (gcd) and least common multiple (lcm), maximum, and hello
+- The third parameter (array) specifies the design decisions for the algorithm, including but not limited to: pivot choice (head or last), loop (iterative or recursive), language, and paradigm
+- The resulting code is generated in a source file in the path from the first parameter, or into the same folder as Main.hs if no path is provided

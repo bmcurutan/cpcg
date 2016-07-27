@@ -66,3 +66,6 @@ ex5 = generate "" "maximum" [D.Lang LP]
 ex6 = generate "" "palindrome" [D.Lang CSharp]
 ex7 = generate "" "hello" [D.Lang Scala, D.Para Func]
 ex8 = generate "" "quicksort" [D.Piv Mid, D.Str Array, D.Lang Java, D.Loop Iter]
+
+main :: IO ()
+main = return ()

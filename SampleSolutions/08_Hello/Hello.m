@@ -1,10 +1,10 @@
 #import <Foundation/Foundation.h>
 
-@interface Hello : NSObject
+@interface HelloProg : NSObject
 - (void)hello;
 @end
 
-@implementation Hello
+@implementation HelloProg
 - (void)hello {
     NSLog(@"Hello World!");
 }

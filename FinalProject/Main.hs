@@ -12,6 +12,7 @@ import PrintCSharp as CS
 import PrintLisp as L
 import PrintLua as Lu
 import PrintScala as S
+import PrintObjectiveC as OC
 
 --External modules
 import System.IO
@@ -56,7 +57,7 @@ generate path alg ch =
                                             hClose outh  
                                     else if (elem (D.Lang ObjectiveC) ch)
                                         then do outh <- openFile (path ++ alg ++ ".m") WriteMode
-                                                hPutStrLn outh $ render $ S.code alg ch
+                                                hPutStrLn outh $ render $ OC.code alg ch
                                                 hClose outh  
                                         else error "Invalid parameters."  
 

@@ -21,7 +21,7 @@ toOO :: I.Program -> OO.Class
 toOO (I.Program ch nm decllist methlist) = 
     if any (`elem` ch) [D.Para Log, D.Para Imp]
         then error "Invalid paradigm choice"
-        else if any (`elem` ch) [D.Lang Haskell, D.Lang C, D.Lang LP, D.Lang Prolog, D.Lang Lua, D.Lang Lisp]
+        else if any (`elem` ch) [D.Lang Haskell, D.Lang C, D.Lang LP, D.Lang Prolog, D.Lang Lua, D.Lang Lisp, D.Lang ObjectiveC]
             then error "Invalid language choice" 
             else if (elem (D.Lang Java) ch)
                 then if (elem (D.Lib Part) ch || elem (D.Lib D.Concat) ch)

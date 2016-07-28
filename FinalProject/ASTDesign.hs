@@ -50,6 +50,7 @@ data Language = Haskell
               | Scala
               | Lua
               | Lisp
+              | ObjectiveC
   deriving Eq
 
 --Paradigm choices - implicit for all languages except Scala

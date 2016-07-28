@@ -21,7 +21,7 @@ toLogic :: I.Program -> L.Module
 toLogic (I.Program ch nm _ fnlist) = 
     if any (`elem` ch) [D.Para Log, D.Para Func, D.Para OO]
         then error "Invalid paradigm choice"
-        else if any (`elem` ch) [D.Lang Haskell, D.Lang Java, D.Lang C, D.Lang Lua, D.Lang Lisp, D.Lang Scala]
+        else if any (`elem` ch) [D.Lang Haskell, D.Lang Java, D.Lang C, D.Lang Lua, D.Lang Lisp, D.Lang Scala, D.Lang ObjectiveC]
             then error "Invalid language choice" 
             else if (elem (D.Loop Iter) ch)
                 then error "No loop iteration available"

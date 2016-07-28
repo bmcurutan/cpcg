@@ -21,7 +21,7 @@ toImp :: I.Program -> Im.Program
 toImp (I.Program ch nm decllist methlist) = 
     if any (`elem` ch) [D.Para Log, D.Para Func, D.Para OO]
         then error "Invalid paradigm choice"
-        else if any (`elem` ch) [D.Lang Haskell, D.Lang Java, D.Lang LP, D.Lang Prolog, D.Lang Lisp, D.Lang Scala] 
+        else if any (`elem` ch) [D.Lang Haskell, D.Lang Java, D.Lang LP, D.Lang Prolog, D.Lang Lisp, D.Lang Scala, D.Lang ObjectiveC] 
             then error "Invalid language choice" 
             else if (elem (D.Lib Part) ch || elem (D.Lib D.Concat) ch) 
                 then error "Chosen libraries are not available in C"

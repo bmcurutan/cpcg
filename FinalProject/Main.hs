@@ -54,7 +54,11 @@ generate path alg ch =
                                     then do outh <- openFile (path ++ alg ++ ".scala") WriteMode
                                             hPutStrLn outh $ render $ S.code alg ch
                                             hClose outh  
-                                    else error "Invalid parameters."  
+                                    else if (elem (D.Lang ObjectiveC) ch)
+                                        then do outh <- openFile (path ++ alg ++ ".m") WriteMode
+                                                hPutStrLn outh $ render $ S.code alg ch
+                                                hClose outh  
+                                        else error "Invalid parameters."  
 
 --Example tests for various languages, algorithms, and design decisions
 --Empty path -> code is generated in same folder as Main module

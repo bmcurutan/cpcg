@@ -21,7 +21,7 @@ toFunct :: I.Program -> F.Module
 toFunct (I.Program ch nm decllist fnlist) = 
     if any (`elem` ch) [D.Para Log,D.Para Imp,D.Para OO]
         then error "Invalid paradigm choice"
-        else if any (`elem` ch) [D.Lang C, D.Lang Java, D.Lang LP, D.Lang Prolog, D.Lang Lua]
+        else if any (`elem` ch) [D.Lang C, D.Lang Java, D.Lang LP, D.Lang Prolog, D.Lang Lua, D.Lang ObjectiveC]
             then error "Invalid language choice" 
             else if (elem (D.Loop Iter) ch)
                 then error "No loop iteration available"

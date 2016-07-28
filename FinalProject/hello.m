@@ -1,7 +1,9 @@
 #import <Foundation/Foundation.h>
 @interface HelloProg: NSObject
-- void hello();
+- (void) hello;
 @end
-void hello() {
+@implementation HelloProg
+- (void) hello {
     printf("Hello World!");
 }
+@end

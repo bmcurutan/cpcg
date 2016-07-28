@@ -25,20 +25,22 @@ import Text.PrettyPrint as P
 
 --Print code with Objective-C syntax
 printObjectiveC :: Program -> Doc
-printObjectiveC (Program nm imps decls mds) = impts imps $$ text "@interface" <> space <> text nm <> colon <> space <> text "NSObject" $$ vcat (map buildD decls) $$ text "@end" $$ vcat (map buildM mds) 
+printObjectiveC (Program nm imps decls mds) = impts imps $$ text "@interface" <+> text nm <> colon <+> text "NSObject" $$ vcat (map buildD decls) $$ text "@end" $$ text "@implementation" <+> text nm $$ vcat (map buildM mds) $$ text "@end"
 
 --Print method declarations at beginning of code, before printing methods themselves
 buildD :: Declaration -> Doc
 buildD (MDecl (t,s) "concat" paramlist) = empty --Assume exists
 buildD (MDecl (t,s) "listConcat" paramlist) = empty --Assume exists
-buildD (MDecl (t,s) nm paramlist) = dash <> space <> typstruct t s <+> text nm <> parens (params paramlist) <> semi
+buildD (MDecl (t,s) nm []) = dash <+> parens(typstruct t s) <+> text nm <> semi
+buildD (MDecl (t,s) nm paramlist) = dash <+> parens(typstruct t s) <+> text nm <> parens (params paramlist) <> semi
 buildD DeclSkip = empty --Nothing to generate
 
 --Print methods - signature and body
 buildM :: Method -> Doc
 buildM (Meth (MDecl (t,s) "concat" paramlist) exs) = empty --Assume exists
 buildM (Meth (MDecl (t,s) "listConcat" paramlist) exs) = empty --Assume exists
-buildM (Meth (MDecl (t,s) nm paramlist) exs) = typstruct t s <+> text nm <> parens (params paramlist) <+> lbrace $+$ nest 4 (expr nm exs) $$ rbrace   
+buildM (Meth (MDecl (t,s) nm []) exs) = dash <+> parens(typstruct t s) <+> text nm <+> lbrace $+$ nest 4 (expr nm exs) $$ rbrace   
+buildM (Meth (MDecl (t,s) nm paramlist) exs) = dash <+> parens(typstruct t s) <+> text nm <> parens (params paramlist) <+> lbrace $+$ nest 4 (expr nm exs) $$ rbrace   
 buildM MethSkip = empty    
 
 --Print method parameters, including types
@@ -51,7 +53,7 @@ params paramlist = foldl1 (<^>) $ map (\x -> decls x) paramlist
 --Print imports
 impts :: [String] -> Doc
 impts [] = empty
-impts (x:xs) = hash <> text "import" <> space <> alligs (text x) $$ impts xs
+impts (x:xs) = hash <> text "import" <+> alligs (text x) $$ impts xs
 
 --Print expressions within methods
 expr :: String -> Expr -> Doc

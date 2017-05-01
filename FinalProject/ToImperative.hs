@@ -115,7 +115,7 @@ chooseloopexpr ch exs1 exs2 =
         then exprs exs1
         else if (elem (D.Loop Rec) ch)
             then exprs exs2
-            else error "Invalid loop choice"
+            else error "Loop choice missing"
 
 --Format assignment (single or block - pair not available)
 asstexpr :: I.Assignment -> Im.Expr

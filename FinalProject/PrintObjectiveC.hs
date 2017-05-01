@@ -25,14 +25,14 @@ import Text.PrettyPrint as P
 
 --Print code with Objective-C syntax
 printObjectiveC :: Program -> Doc
-printObjectiveC (Program nm imps decls mds) = impts imps $$ text "@interface" <+> text nm <> colon <+> text "NSObject" $$ vcat (map buildD decls) $$ text "@end" $$ text "@implementation" <+> text nm $$ vcat (map buildM mds) $$ text "@end"
+printObjectiveC (Program nm imps decls mds) = impts imps $$ text "@interface" <+> text nm <:> text "NSObject" $$ vcat (map buildD decls) $$ text "@end" $$ text "@implementation" <+> text nm $$ vcat (map buildM mds) $$ text "@end"
 
 --Print method declarations at beginning of code, before printing methods themselves
 buildD :: Declaration -> Doc
 buildD (MDecl (t,s) "concat" paramlist) = empty --Assume exists
 buildD (MDecl (t,s) "listConcat" paramlist) = empty --Assume exists
-buildD (MDecl (t,s) nm []) = dash <+> parens(typstruct t s) <+> text nm <> semi
-buildD (MDecl (t,s) nm paramlist) = dash <+> parens(typstruct t s) <+> text nm <> parens (params paramlist) <> semi
+buildD (MDecl (t,s) nm []) = dash <+> parens(typstruct t s) <> text nm <> semi
+buildD (MDecl (t,s) nm (d:ds)) = dash <+> parens(typstruct t s) <> text nm <:> params [d] <+> params ds <> semi
 buildD DeclSkip = empty --Nothing to generate
 
 --Print methods - signature and body
@@ -40,15 +40,16 @@ buildM :: Method -> Doc
 buildM (Meth (MDecl (t,s) "concat" paramlist) exs) = empty --Assume exists
 buildM (Meth (MDecl (t,s) "listConcat" paramlist) exs) = empty --Assume exists
 buildM (Meth (MDecl (t,s) nm []) exs) = dash <+> parens(typstruct t s) <+> text nm <+> lbrace $+$ nest 4 (expr nm exs) $$ rbrace   
-buildM (Meth (MDecl (t,s) nm paramlist) exs) = dash <+> parens(typstruct t s) <+> text nm <> parens (params paramlist) <+> lbrace $+$ nest 4 (expr nm exs) $$ rbrace   
+buildM (Meth (MDecl (t,s) nm (d:ds)) exs) = dash <+> parens(typstruct t s) <+> text nm <:> params [d] <+> params ds <+> lbrace $+$ nest 4 (expr nm exs) $$ rbrace   
 buildM MethSkip = empty    
 
 --Print method parameters, including types
 params :: [Declaration] -> Doc
 params [] = empty
-params paramlist = foldl1 (<^>) $ map (\x -> decls x) paramlist
+params [ADecl (t,s) v] = parens(typstruct t s) <> text v
+params paramlist = foldl1 (<+>) $ map (\x -> decls x) paramlist
   where
-    decls (ADecl (t,s) v) = typstruct t s <+> text v
+    decls (ADecl (t,s) v) = text v <:> parens(typstruct t s) <> text v
 
 --Print imports
 impts :: [String] -> Doc
@@ -64,7 +65,7 @@ expr self (NodeExpr n) = node self n
 expr self (CallExpr t nm p) = callexpr self t nm p
 expr self Unit = empty
 expr self (ReturnExpr ex) = retexpr self ex
-expr self (MaxExpr nd1 nd2) = parens (node self nd1 <+> greater <+> node self nd2) <+> ques <+> node self nd1 <+> colon <+> node self nd2
+expr self (MaxExpr nd1 nd2) = parens (node self nd1 <+> greater <+> node self nd2) <+> ques <+> node self nd1 <:> node self nd2
 expr self (SelfExpr t p) = callexpr self t self p
 expr self (RevExpr nd1 nd2) = text "strcopy" <> parens ((node self nd2) <^> (node self nd1)) <> semi $$ text "strrev" <> parens (node self nd2)
 expr self (CommExpr c) = comments c
@@ -84,7 +85,7 @@ asstexpr self v ex = node self v <+> equals <+> expr self ex <> semi
 --Format method calls based on return type (semis)
 callexpr :: String -> Type -> String -> [Expr] -> Doc
 callexpr self VoidType nm p = lsmanip self p $$ text nm <> parens (argmanip self p) <> semi
-callexpr self _ nm p = lsmanip self p $$ text nm <> parens (argmanip self p) --no semi
+callexpr self _ nm p = lsmanip self p $$ brackets(text "self" <+> text nm <> argmanip self p) -- no semi
 
 --List manipulation, since need to do this before calling
 lsmanip :: String -> [Expr] -> Doc
@@ -103,13 +104,13 @@ argmanip self [NodeExpr (Sel nd LsNotFirst)] = node self nd
 argmanip self [NodeExpr (Sel nd LsNotLast)] = node self nd
 argmanip self [NodeExpr (Sel nd (LsAddFirst _))] = node self nd
 argmanip self [NodeExpr (Sel nd (LsAddLast _))] = node self nd
-argmanip self (NodeExpr (Sel nd LsNotFirst):xs) = node self nd <^> argmanip self xs
-argmanip self (NodeExpr (Sel nd LsNotLast):xs) = node self nd <^> argmanip self xs
-argmanip self (NodeExpr (Sel nd (LsAddFirst _)):xs) = node self nd <^> argmanip self xs
-argmanip self (NodeExpr (Sel nd (LsAddLast _)):xs) = node self nd <^> argmanip self xs
+argmanip self (NodeExpr (Sel nd LsNotFirst):xs) = node self nd <+> argmanip self xs
+argmanip self (NodeExpr (Sel nd LsNotLast):xs) = node self nd <+> argmanip self xs
+argmanip self (NodeExpr (Sel nd (LsAddFirst _)):xs) = node self nd <+> argmanip self xs
+argmanip self (NodeExpr (Sel nd (LsAddLast _)):xs) = node self nd <+> argmanip self xs
 argmanip self [CallExpr t "listConcat" [nd,ex]] = expr self nd
 argmanip self [ex] = expr self ex 
-argmanip self (ex:exs) = expr self ex <^> argmanip self exs
+argmanip self (ex:exs) = expr self ex <:> expr self ex <+> argmanip self exs
 
 --Format returns based on use (semis)
 retexpr :: String -> Expr -> Doc

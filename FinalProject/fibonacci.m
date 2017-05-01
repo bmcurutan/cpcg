@@ -1,10 +1,8 @@
 #import <Foundation/Foundation.h>
-
-@interface FibonacciProg: NSObject
-- (long) fibonacci:(long)n;
-- (long) fibonacciIter:(long)f n1:(long)n1 n2:(long)n2 i:(long)i n:(long)n;
+@interface FibonacciProg:NSObject
+- (long)fibonacci:(long)n;
+- (long)fibonacciIter:(long)f n1:(long)n1 n2:(long)n2 i:(long)i n:(long)n;
 @end
-
 @implementation FibonacciProg
 - (long) fibonacci:(long)n {
     /* The Fibonacci numbers are the numbers in the following integer sequence:
@@ -14,7 +12,7 @@
         return n;
     }
     else {
-        return [self fibonacciIter:n n1:0 n2:1 i:2 n:n];
+        return [self fibonacciItern:n 0:0 1:1 2:2 n];
     }
 }
 - (long) fibonacciIter:(long)f n1:(long)n1 n2:(long)n2 i:(long)i n:(long)n {
